@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WanderCraft – KI Reiseplaner</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --sand: #F5EFE0;
+    --sand-dark: #E8DFC8;
+    --ink: #1A1410;
+    --terra: #C4602A;
+    --terra-light: #E8845A;
+    --sage: #7A9E7E;
+    --gold: #BFA46A;
+    --white: #FDFAF4;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--sand);
+    color: var(--ink);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  .lang-toggle {
+    position: fixed;
+    top: 20px; right: 24px;
+    z-index: 100;
+    display: flex;
+    background: var(--ink);
+    border-radius: 20px;
+    overflow: hidden;
+  }
+  .lang-btn {
+    background: none; border: none;
+    color: rgba(245,239,224,0.5);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12px; font-weight: 500;
+    padding: 8px 14px; cursor: pointer;
+    transition: all 0.2s; letter-spacing: 0.05em;
+  }
+  .lang-btn.active { background: var(--terra); color: var(--sand); }
+
+  header { padding: 60px 40px 0; text-align: center; position: relative; }
+  .logo {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 13px; font-weight: 400;
+    letter-spacing: 0.3em; text-transform: uppercase;
+    color: var(--terra); margin-bottom: 28px;
+  }
+  .hero-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(48px, 8vw, 96px);
+    font-weight: 300; line-height: 0.92;
+    letter-spacing: -0.02em; margin-bottom: 24px;
+  }
+  .hero-title em { font-style: italic; color: var(--terra); }
+  .hero-sub {
+    font-size: 15px; font-weight: 300;
+    color: rgba(26,20,16,0.6);
+    max-width: 480px; margin: 0 auto 60px; line-height: 1.7;
+  }
+  .deco-line {
+    width: 1px; height: 60px;
+    background: linear-gradient(to bottom, transparent, var(--terra), transparent);
+    margin: 0 auto 60px;
+  }
+
+  .planner-card {
+    max-width: 720px; margin: 0 auto;
+    background: var(--white); border-radius: 4px;
+    padding: 56px 64px; position: relative;
+    box-shadow: 0 4px 60px rgba(26,20,16,0.08), 0 1px 0 rgba(191,164,106,0.3);
+    margin-bottom: 32px;
+  }
+  .planner-card::before {
+    content: ''; position: absolute;
+    top: 0; left: 0; right: 0; height: 3px;
+    background: linear-gradient(90deg, var(--terra), var(--gold), var(--terra-light));
+  }
+  .card-label {
+    font-size: 11px; font-weight: 500;
+    letter-spacing: 0.25em; text-transform: uppercase;
+    color: var(--terra); margin-bottom: 32px;
+  }
+
+  .steps-row {
+    display: flex; margin-bottom: 48px; position: relative;
+  }
+  .steps-row::before {
+    content: ''; position: absolute;
+    top: 16px; left: 16px; right: 16px;
+    height: 1px; background: var(--sand-dark);
+  }
+  .step-dot {
+    width: 32px; height: 32px; border-radius: 50%;
+    border: 1.5px solid var(--sand-dark);
+    background: var(--white);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 500;
+    color: rgba(26,20,16,0.35);
+    margin: 0 auto; position: relative; z-index: 1;
+    transition: all 0.3s; flex-shrink: 0;
+  }
+  .step-dot.active { background: var(--terra); border-color: var(--terra); color: var(--white); }
+  .step-dot.done { background: var(--sage); border-color: var(--sage); color: var(--white); }
+  .step-item { flex: 1; text-align: center; }
+  .step-name { font-size: 10px; color: rgba(26,20,16,0.4); margin-top: 8px; letter-spacing: 0.05em; }
+
+  .step-panel { display: none; }
+  .step-panel.active { display: block; animation: fadeUp 0.4s ease; }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .step-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 28px; font-weight: 400; margin-bottom: 6px;
+  }
+  .step-desc { font-size: 14px; color: rgba(26,20,16,0.5); margin-bottom: 32px; font-weight: 300; }
+
+  .field-group { margin-bottom: 20px; }
+  .field-label {
+    font-size: 11px; font-weight: 500;
+    letter-spacing: 0.15em; text-transform: uppercase;
+    color: rgba(26,20,16,0.5); margin-bottom: 8px; display: block;
+  }
+  .field-select {
+    width: 100%; padding: 14px 18px;
+    background: var(--sand);
+    border: 1.5px solid var(--sand-dark); border-radius: 3px;
+    font-family: 'DM Sans', sans-serif; font-size: 14px; color: var(--ink);
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23C4602A' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: right 18px center;
+    cursor: pointer; transition: border-color 0.2s;
+  }
+  .field-select:focus { outline: none; border-color: var(--terra); }
+
+  .fields-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+
+  .chips-row { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px; }
+  .chip {
+    padding: 10px 18px;
+    border: 1.5px solid var(--sand-dark); border-radius: 40px;
+    font-size: 13px; cursor: pointer; transition: all 0.2s;
+    background: var(--sand); color: var(--ink); user-select: none;
+  }
+  .chip:hover { border-color: var(--terra); color: var(--terra); }
+  .chip.selected { background: var(--terra); border-color: var(--terra); color: var(--white); }
+
+  .field-textarea {
+    width: 100%; padding: 14px 18px;
+    background: var(--sand);
+    border: 1.5px solid var(--sand-dark); border-radius: 3px;
+    font-family: 'DM Sans', sans-serif; font-size: 14px; color: var(--ink);
+    resize: none; min-height: 100px; line-height: 1.6;
+    transition: border-color 0.2s;
+  }
+  .field-textarea:focus { outline: none; border-color: var(--terra); }
+  .field-textarea::placeholder { color: rgba(26,20,16,0.35); }
+
+  .btn-row { display: flex; gap: 12px; margin-top: 36px; align-items: center; }
+  .btn-primary {
+    background: var(--terra); color: var(--white); border: none;
+    padding: 16px 36px;
+    font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 500;
+    letter-spacing: 0.1em; text-transform: uppercase;
+    cursor: pointer; border-radius: 2px; transition: all 0.2s; flex-shrink: 0;
+  }
+  .btn-primary:hover { background: var(--terra-light); transform: translateY(-1px); }
+  .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+  .btn-back {
+    background: none; border: none;
+    font-family: 'DM Sans', sans-serif; font-size: 13px;
+    color: rgba(26,20,16,0.4); cursor: pointer; padding: 16px 0;
+    transition: color 0.2s; letter-spacing: 0.05em;
+  }
+  .btn-back:hover { color: var(--ink); }
+
+  .loading-state { text-align: center; padding: 60px 0; }
+  .spinner {
+    width: 40px; height: 40px;
+    border: 2px solid var(--sand-dark); border-top-color: var(--terra);
+    border-radius: 50%; animation: spin 0.8s linear infinite;
+    margin: 0 auto 24px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .loading-text {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 22px; font-weight: 300; margin-bottom: 8px;
+  }
+  .loading-sub { font-size: 13px; color: rgba(26,20,16,0.45); font-weight: 300; }
+
+  .result-box {
+    background: var(--sand); border-radius: 3px; padding: 32px;
+    border-left: 3px solid var(--terra);
+    font-size: 14px; line-height: 1.85; color: var(--ink);
+    white-space: pre-wrap; font-weight: 300;
+    max-height: 480px; overflow-y: auto;
+  }
+  .result-box::-webkit-scrollbar { width: 4px; }
+  .result-box::-webkit-scrollbar-thumb { background: var(--terra-light); border-radius: 2px; }
+
+  .result-actions { display: flex; gap: 12px; margin-top: 24px; flex-wrap: wrap; }
+  .btn-outline {
+    background: none; border: 1.5px solid var(--terra); color: var(--terra);
+    padding: 12px 24px; font-family: 'DM Sans', sans-serif;
+    font-size: 12px; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase;
+    cursor: pointer; border-radius: 2px; transition: all 0.2s;
+  }
+  .btn-outline:hover { background: var(--terra); color: var(--white); }
+
+  .pricing-section {
+    max-width: 720px; margin: 0 auto 80px;
+    display: grid; grid-template-columns: 1fr 1fr; gap: 16px;
+  }
+  .pricing-card {
+    background: var(--white); border-radius: 4px; padding: 40px 36px;
+    box-shadow: 0 2px 30px rgba(26,20,16,0.06);
+    position: relative; overflow: hidden; transition: transform 0.2s;
+  }
+  .pricing-card:hover { transform: translateY(-4px); }
+  .pricing-card.featured::before {
+    content: ''; position: absolute;
+    top: 0; left: 0; right: 0; height: 3px;
+    background: linear-gradient(90deg, var(--terra), var(--gold));
+  }
+  .pricing-badge {
+    font-size: 10px; font-weight: 500; letter-spacing: 0.2em; text-transform: uppercase;
+    color: var(--terra); background: rgba(196,96,42,0.1);
+    display: inline-block; padding: 4px 10px; border-radius: 20px; margin-bottom: 20px;
+  }
+  .pricing-name { font-family: 'Cormorant Garamond', serif; font-size: 26px; font-weight: 400; margin-bottom: 8px; }
+  .pricing-price { font-family: 'Cormorant Garamond', serif; font-size: 52px; font-weight: 300; line-height: 1; margin-bottom: 4px; }
+  .pricing-price sup { font-size: 22px; vertical-align: top; margin-top: 12px; font-weight: 300; }
+  .pricing-period { font-size: 13px; color: rgba(26,20,16,0.45); margin-bottom: 28px; font-weight: 300; }
+  .pricing-features { list-style: none; margin-bottom: 32px; }
+  .pricing-features li {
+    font-size: 13px; color: rgba(26,20,16,0.7); padding: 7px 0;
+    border-bottom: 1px solid var(--sand-dark);
+    display: flex; align-items: center; gap: 10px; font-weight: 300;
+  }
+  .pricing-features li::before { content: '✦'; color: var(--terra); font-size: 8px; flex-shrink: 0; }
+
+  footer { text-align: center; padding: 40px; font-size: 12px; color: rgba(26,20,16,0.35); letter-spacing: 0.05em; }
+
+  .bg-deco {
+    position: fixed; top: -200px; right: -200px;
+    width: 600px; height: 600px; border-radius: 50%;
+    background: radial-gradient(circle, rgba(196,96,42,0.06) 0%, transparent 70%);
+    pointer-events: none; z-index: 0;
+  }
+  .bg-deco2 {
+    position: fixed; bottom: -200px; left: -200px;
+    width: 500px; height: 500px; border-radius: 50%;
+    background: radial-gradient(circle, rgba(122,158,126,0.07) 0%, transparent 70%);
+    pointer-events: none; z-index: 0;
+  }
+  main { position: relative; z-index: 1; padding: 0 24px 60px; }
+
+  .reveal { opacity: 0; transform: translateY(20px); transition: opacity 0.6s ease, transform 0.6s ease; }
+  .reveal.visible { opacity: 1; transform: translateY(0); }
+
+  .error-msg {
+    background: rgba(196,96,42,0.1); border-left: 3px solid var(--terra);
+    padding: 12px 16px; font-size: 13px; color: var(--terra);
+    border-radius: 2px; margin-top: 16px;
+  }
+
+  @media (max-width: 640px) {
+    .planner-card { padding: 36px 28px; }
+    .fields-grid { grid-template-columns: 1fr; }
+    .pricing-section { grid-template-columns: 1fr; }
+    header { padding: 48px 24px 0; }
+  }
+</style>
+</head>
+<body>
+
+<div class="bg-deco"></div>
+<div class="bg-deco2"></div>
+
+<div class="lang-toggle">
+  <button class="lang-btn active" onclick="setLang('de')">DE</button>
+  <button class="lang-btn" onclick="setLang('en')">EN</button>
+</div>
+
+<header>
+  <div class="logo">WanderCraft</div>
+  <h1 class="hero-title" id="hero-title">Deine Reise,<br><em>perfekt geplant.</em></h1>
+  <p class="hero-sub" id="hero-sub">Beantworte ein paar Fragen – unsere KI erstellt dir in Sekunden einen persönlichen Reiseplan, den du sofort verwenden kannst.</p>
+  <div class="deco-line"></div>
+</header>
+
+<main>
+  <div class="planner-card reveal" id="planner-card">
+    <div class="card-label" id="card-label">Reiseplaner</div>
+
+    <div class="steps-row">
+      <div class="step-item"><div class="step-dot active" id="dot1">1</div><div class="step-name" id="sname1">Ziel</div></div>
+      <div class="step-item"><div class="step-dot" id="dot2">2</div><div class="step-name" id="sname2">Stil</div></div>
+      <div class="step-item"><div class="step-dot" id="dot3">3</div><div class="step-name" id="sname3">Details</div></div>
+      <div class="step-item"><div class="step-dot" id="dot4">4</div><div class="step-name" id="sname4">Plan</div></div>
+    </div>
+
+    <!-- STEP 1 -->
+    <div class="step-panel active" id="step1">
+      <div class="step-title" id="s1-title">Wohin geht die Reise?</div>
+      <div class="step-desc" id="s1-desc">Wähle dein Ziel und die Reisedauer aus.</div>
+      <div class="fields-grid">
+        <div class="field-group">
+          <label class="field-label" id="l-region">Region</label>
+          <select class="field-select" id="sel-region">
+            <option value="">— Wählen —</option>
+            <option>🌍 Europa</option>
+            <option>🌏 Asien</option>
+            <option>🌎 Nordamerika</option>
+            <option>🌎 Südamerika</option>
+            <option>🌍 Afrika</option>
+            <option>🌏 Ozeanien</option>
+            <option>🕌 Mittlerer Osten</option>
+          </select>
+        </div>
+        <div class="field-group">
+          <label class="field-label" id="l-country">Land / Stadt (optional)</label>
+          <select class="field-select" id="sel-country">
+            <option value="">— Wählen —</option>
+            <option>✨ Überrasch mich</option>
+            <option>Japan</option><option>Italien</option><option>Portugal</option>
+            <option>Spanien</option><option>Thailand</option><option>Bali</option>
+            <option>Marokko</option><option>Griechenland</option><option>USA</option>
+            <option>Island</option><option>Neuseeland</option>
+          </select>
+        </div>
+        <div class="field-group">
+          <label class="field-label" id="l-duration">Dauer</label>
+          <select class="field-select" id="sel-duration">
+            <option value="">— Wählen —</option>
+            <option>3–4 Tage (Kurztrip)</option>
+            <option>5–7 Tage (1 Woche)</option>
+            <option>8–14 Tage (2 Wochen)</option>
+            <option>15–21 Tage (3 Wochen)</option>
+            <option>Mehr als 3 Wochen</option>
+          </select>
+        </div>
+        <div class="field-group">
+          <label class="field-label" id="l-people">Reisende</label>
+          <select class="field-select" id="sel-people">
+            <option value="">— Wählen —</option>
+            <option>Solo</option><option>Zu zweit</option>
+            <option>Familie mit Kindern</option>
+            <option>Gruppe (3–6 Personen)</option>
+            <option>Große Gruppe (7+)</option>
+          </select>
+        </div>
+      </div>
+      <div class="btn-row">
+        <button class="btn-primary" onclick="goStep(2)" id="btn-s1">Weiter →</button>
+      </div>
+    </div>
+
+    <!-- STEP 2 -->
+    <div class="step-panel" id="step2">
+      <div class="step-title" id="s2-title">Was ist dein Reisestil?</div>
+      <div class="step-desc" id="s2-desc">Wähle alles, was auf dich zutrifft.</div>
+      <label class="field-label" id="l-style">Reisestil (Mehrfachauswahl)</label>
+      <div class="chips-row" id="chips-style">
+        <div class="chip" onclick="toggleChip(this)">🏖️ Strand & Meer</div>
+        <div class="chip" onclick="toggleChip(this)">🏛️ Kultur & Geschichte</div>
+        <div class="chip" onclick="toggleChip(this)">🍜 Essen & Kulinarik</div>
+        <div class="chip" onclick="toggleChip(this)">🥾 Wandern & Natur</div>
+        <div class="chip" onclick="toggleChip(this)">🎭 Nightlife & Party</div>
+        <div class="chip" onclick="toggleChip(this)">🧘 Wellness & Spa</div>
+        <div class="chip" onclick="toggleChip(this)">📸 Fotografie</div>
+        <div class="chip" onclick="toggleChip(this)">🛍️ Shopping</div>
+        <div class="chip" onclick="toggleChip(this)">🏔️ Abenteuer & Sport</div>
+        <div class="chip" onclick="toggleChip(this)">🤝 Lokale Kultur</div>
+      </div>
+      <div class="field-group" style="margin-top:16px">
+        <label class="field-label" id="l-budget">Budget (pro Person / Tag)</label>
+        <select class="field-select" id="sel-budget">
+          <option value="">— Wählen —</option>
+          <option>🎒 Backpacker (unter 50€/Tag)</option>
+          <option>👜 Mittel (50–150€/Tag)</option>
+          <option>✈️ Komfort (150–300€/Tag)</option>
+          <option>💎 Luxus (über 300€/Tag)</option>
+        </select>
+      </div>
+      <div class="btn-row">
+        <button class="btn-back" onclick="goStep(1)" id="btn-back2">← Zurück</button>
+        <button class="btn-primary" onclick="goStep(3)" id="btn-s2">Weiter →</button>
+      </div>
+    </div>
+
+    <!-- STEP 3 -->
+    <div class="step-panel" id="step3">
+      <div class="step-title" id="s3-title">Letzte Details</div>
+      <div class="step-desc" id="s3-desc">Fast fertig! Noch ein paar Präferenzen.</div>
+      <div class="field-group">
+        <label class="field-label" id="l-accom">Unterkunft</label>
+        <select class="field-select" id="sel-accom">
+          <option value="">— Wählen —</option>
+          <option>Hostel / Backpacker</option>
+          <option>Günstige Hotels (2–3 Sterne)</option>
+          <option>Mittelklasse-Hotels (3–4 Sterne)</option>
+          <option>Luxushotels (4–5 Sterne)</option>
+          <option>Boutique-Hotels & B&B</option>
+          <option>Ferienwohnungen / Apartments</option>
+          <option>Camping & Glamping</option>
+        </select>
+      </div>
+      <div class="field-group">
+        <label class="field-label" id="l-transport">Transport vor Ort</label>
+        <select class="field-select" id="sel-transport">
+          <option value="">— Wählen —</option>
+          <option>🚇 Öffentliche Verkehrsmittel</option>
+          <option>🚗 Mietwagen</option>
+          <option>🛵 Motorroller / Motorrad</option>
+          <option>🚲 Fahrrad</option>
+          <option>🚶 Zu Fuß</option>
+          <option>🔀 Mischung aus allem</option>
+        </select>
+      </div>
+      <div class="field-group">
+        <label class="field-label" id="l-wishes">Besondere Wünsche (optional)</label>
+        <textarea class="field-textarea" id="txt-wishes" placeholder="z.B. vegetarische Restaurants, barrierefrei, bestimmte Sehenswürdigkeiten vermeiden..."></textarea>
+      </div>
+      <div class="btn-row">
+        <button class="btn-back" onclick="goStep(2)" id="btn-back3">← Zurück</button>
+        <button class="btn-primary" onclick="generatePlan()" id="btn-generate">✦ Plan erstellen</button>
+      </div>
+    </div>
+
+    <!-- STEP 4 -->
+    <div class="step-panel" id="step4">
+      <div id="loading-view" class="loading-state">
+        <div class="spinner"></div>
+        <div class="loading-text" id="loading-text">Dein Plan wird erstellt …</div>
+        <div class="loading-sub" id="loading-sub">Unsere KI denkt nach und plant dein Abenteuer</div>
+      </div>
+      <div id="result-view" style="display:none">
+        <div class="step-title" id="s4-title">Dein Reiseplan ✦</div>
+        <div class="step-desc" id="s4-desc">Hier ist dein persönlicher Plan. Gespeichert wird er nach dem Kauf.</div>
+        <div class="result-box" id="result-text"></div>
+        <div id="error-box" style="display:none" class="error-msg"></div>
+        <div class="result-actions">
+          <button class="btn-primary" id="btn-buy" onclick="showPayment()">💳 Plan kaufen – CHF 7</button>
+          <button class="btn-outline" onclick="goStep(1); resetAll()" id="btn-new">Neuen Plan erstellen</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PRICING -->
+  <div class="pricing-section reveal">
+    <div class="pricing-card">
+      <div class="pricing-badge" id="badge-single">Einmalig</div>
+      <div class="pricing-name" id="price-name1">Ein Plan</div>
+      <div class="pricing-price"><sup>CHF </sup>7</div>
+      <div class="pricing-period" id="price-period1">einmalige Zahlung</div>
+      <ul class="pricing-features" id="features1">
+        <li>Vollständiger Tagesplan</li>
+        <li>Unterkunfts-Empfehlungen</li>
+        <li>Restaurant-Tipps</li>
+        <li>Transport-Hinweise</li>
+        <li>PDF-Download</li>
+      </ul>
+      <button class="btn-primary" onclick="showPayment()" style="width:100%">Plan kaufen</button>
+    </div>
+    <div class="pricing-card featured">
+      <div class="pricing-badge" id="badge-sub">Beliebt ✦</div>
+      <div class="pricing-name" id="price-name2">Unlimited</div>
+      <div class="pricing-price"><sup>CHF </sup>19</div>
+      <div class="pricing-period" id="price-period2">/ Monat – jederzeit kündbar</div>
+      <ul class="pricing-features" id="features2">
+        <li>Unbegrenzt viele Pläne</li>
+        <li>Vollständige Tagespläne</li>
+        <li>Unterkunfts-Empfehlungen</li>
+        <li>Restaurant-Tipps</li>
+        <li>PDF-Download & Teilen</li>
+      </ul>
+      <button class="btn-primary" onclick="showPayment(true)" style="width:100%">Abo starten</button>
+    </div>
+  </div>
+</main>
+
+<footer>
+  <p>© 2025 WanderCraft &nbsp;·&nbsp; <span id="footer-text">Powered by KI – für echte Reisende</span></p>
+</footer>
+
+<script>
+let lang = 'de';
+const T = {
+  de: {
+    heroTitle: 'Deine Reise,<br><em>perfekt geplant.</em>',
+    heroSub: 'Beantworte ein paar Fragen – unsere KI erstellt dir in Sekunden einen persönlichen Reiseplan, den du sofort verwenden kannst.',
+    cardLabel: 'Reiseplaner',
+    sname: ['Ziel','Stil','Details','Plan'],
+    s1t:'Wohin geht die Reise?', s1d:'Wähle dein Ziel und die Reisedauer aus.',
+    s2t:'Was ist dein Reisestil?', s2d:'Wähle alles, was auf dich zutrifft.',
+    s3t:'Letzte Details', s3d:'Fast fertig! Noch ein paar Präferenzen.',
+    s4t:'Dein Reiseplan ✦', s4d:'Hier ist dein persönlicher Plan. Gespeichert wird er nach dem Kauf.',
+    lRegion:'Region', lCountry:'Land / Stadt (optional)', lDuration:'Dauer', lPeople:'Reisende',
+    lStyle:'Reisestil (Mehrfachauswahl)', lBudget:'Budget (pro Person / Tag)',
+    lAccom:'Unterkunft', lTransport:'Transport vor Ort', lWishes:'Besondere Wünsche (optional)',
+    wishPH:'z.B. vegetarische Restaurants, barrierefrei, bestimmte Sehenswürdigkeiten vermeiden...',
+    btnNext:'Weiter →', btnBack:'← Zurück', btnGenerate:'✦ Plan erstellen',
+    btnBuy:'💳 Plan kaufen – CHF 7', btnNew:'Neuen Plan erstellen',
+    loadT:'Dein Plan wird erstellt …', loadS:'Unsere KI denkt nach und plant dein Abenteuer',
+    badgeSingle:'Einmalig', badgeSub:'Beliebt ✦',
+    pName1:'Ein Plan', pPeriod1:'einmalige Zahlung',
+    pName2:'Unlimited', pPeriod2:'/ Monat – jederzeit kündbar',
+    f1:['Vollständiger Tagesplan','Unterkunfts-Empfehlungen','Restaurant-Tipps','Transport-Hinweise','PDF-Download'],
+    f2:['Unbegrenzt viele Pläne','Vollständige Tagespläne','Unterkunfts-Empfehlungen','Restaurant-Tipps','PDF-Download & Teilen'],
+    footer:'Powered by KI – für echte Reisende',
+    chips:['🏖️ Strand & Meer','🏛️ Kultur & Geschichte','🍜 Essen & Kulinarik','🥾 Wandern & Natur','🎭 Nightlife & Party','🧘 Wellness & Spa','📸 Fotografie','🛍️ Shopping','🏔️ Abenteuer & Sport','🤝 Lokale Kultur'],
+    promptFn: (r,c,d,p,s,b,a,t,w) => `Du bist ein erfahrener Reiseplaner. Erstelle einen detaillierten, inspirierenden Reiseplan:\n- Region: ${r}\n- Ziel: ${c}\n- Dauer: ${d}\n- Reisende: ${p}\n- Reisestil: ${s}\n- Budget: ${b}\n- Unterkunft: ${a}\n- Transport: ${t}\n- Besondere Wünsche: ${w}\n\nErstelle einen strukturierten Tagesplan (Tag 1, Tag 2, etc.) mit konkreten Empfehlungen für Aktivitäten, Restaurants, Sehenswürdigkeiten und praktischen Tipps. Schreibe auf Deutsch. Sei enthusiastisch und inspirierend!`
+  },
+  en: {
+    heroTitle: 'Your journey,<br><em>perfectly planned.</em>',
+    heroSub: 'Answer a few questions – our AI creates your personal travel plan in seconds, ready to use immediately.',
+    cardLabel: 'Travel Planner',
+    sname: ['Destination','Style','Details','Plan'],
+    s1t:'Where do you want to go?', s1d:'Choose your destination and travel duration.',
+    s2t:'What is your travel style?', s2d:'Select everything that applies to you.',
+    s3t:'Final Details', s3d:'Almost done! A few more preferences.',
+    s4t:'Your Travel Plan ✦', s4d:'Here is your personal plan. It will be saved after purchase.',
+    lRegion:'Region', lCountry:'Country / City (optional)', lDuration:'Duration', lPeople:'Travelers',
+    lStyle:'Travel Style (multi-select)', lBudget:'Budget (per person / day)',
+    lAccom:'Accommodation', lTransport:'Local Transport', lWishes:'Special requests (optional)',
+    wishPH:'e.g. vegetarian restaurants, wheelchair accessible, certain sights to avoid...',
+    btnNext:'Next →', btnBack:'← Back', btnGenerate:'✦ Create Plan',
+    btnBuy:'💳 Buy Plan – CHF 7', btnNew:'Create New Plan',
+    loadT:'Creating your plan …', loadS:'Our AI is thinking and planning your adventure',
+    badgeSingle:'One-time', badgeSub:'Popular ✦',
+    pName1:'One Plan', pPeriod1:'one-time payment',
+    pName2:'Unlimited', pPeriod2:'/ month – cancel anytime',
+    f1:['Full day-by-day itinerary','Accommodation recommendations','Restaurant tips','Transport guidance','PDF download'],
+    f2:['Unlimited travel plans','Full day-by-day itineraries','Accommodation recommendations','Restaurant tips','PDF download & share'],
+    footer:'Powered by AI – for real travelers',
+    chips:['🏖️ Beach & Sea','🏛️ Culture & History','🍜 Food & Cuisine','🥾 Hiking & Nature','🎭 Nightlife & Party','🧘 Wellness & Spa','📸 Photography','🛍️ Shopping','🏔️ Adventure & Sports','🤝 Local Culture'],
+    promptFn: (r,c,d,p,s,b,a,t,w) => `You are an experienced travel planner. Create a detailed, inspiring travel plan:\n- Region: ${r}\n- Destination: ${c}\n- Duration: ${d}\n- Travelers: ${p}\n- Travel style: ${s}\n- Budget: ${b}\n- Accommodation: ${a}\n- Transport: ${t}\n- Special requests: ${w}\n\nCreate a structured day-by-day itinerary (Day 1, Day 2, etc.) with specific recommendations for activities, restaurants, sights and practical tips. Be enthusiastic and inspiring!`
+  }
+};
+
+function setLang(l) {
+  lang = l;
+  document.querySelectorAll('.lang-btn').forEach(b => b.classList.toggle('active', b.textContent === l.toUpperCase()));
+  const t = T[l];
+  document.getElementById('hero-title').innerHTML = t.heroTitle;
+  document.getElementById('hero-sub').textContent = t.heroSub;
+  document.getElementById('card-label').textContent = t.cardLabel;
+  ['sname1','sname2','sname3','sname4'].forEach((id,i) => document.getElementById(id).textContent = t.sname[i]);
+  document.getElementById('s1-title').textContent = t.s1t;
+  document.getElementById('s1-desc').textContent = t.s1d;
+  document.getElementById('s2-title').textContent = t.s2t;
+  document.getElementById('s2-desc').textContent = t.s2d;
+  document.getElementById('s3-title').textContent = t.s3t;
+  document.getElementById('s3-desc').textContent = t.s3d;
+  document.getElementById('s4-title').textContent = t.s4t;
+  document.getElementById('s4-desc').textContent = t.s4d;
+  document.getElementById('l-region').textContent = t.lRegion;
+  document.getElementById('l-country').textContent = t.lCountry;
+  document.getElementById('l-duration').textContent = t.lDuration;
+  document.getElementById('l-people').textContent = t.lPeople;
+  document.getElementById('l-style').textContent = t.lStyle;
+  document.getElementById('l-budget').textContent = t.lBudget;
+  document.getElementById('l-accom').textContent = t.lAccom;
+  document.getElementById('l-transport').textContent = t.lTransport;
+  document.getElementById('l-wishes').textContent = t.lWishes;
+  document.getElementById('txt-wishes').placeholder = t.wishPH;
+  document.getElementById('btn-s1').textContent = t.btnNext;
+  document.getElementById('btn-back2').textContent = t.btnBack;
+  document.getElementById('btn-s2').textContent = t.btnNext;
+  document.getElementById('btn-back3').textContent = t.btnBack;
+  document.getElementById('btn-generate').textContent = t.btnGenerate;
+  document.getElementById('btn-buy').textContent = t.btnBuy;
+  document.getElementById('btn-new').textContent = t.btnNew;
+  document.getElementById('loading-text').textContent = t.loadT;
+  document.getElementById('loading-sub').textContent = t.loadS;
+  document.getElementById('badge-single').textContent = t.badgeSingle;
+  document.getElementById('badge-sub').textContent = t.badgeSub;
+  document.getElementById('price-name1').textContent = t.pName1;
+  document.getElementById('price-period1').textContent = t.pPeriod1;
+  document.getElementById('price-name2').textContent = t.pName2;
+  document.getElementById('price-period2').textContent = t.pPeriod2;
+  document.getElementById('features1').innerHTML = t.f1.map(f=>`<li>${f}</li>`).join('');
+  document.getElementById('features2').innerHTML = t.f2.map(f=>`<li>${f}</li>`).join('');
+  document.getElementById('footer-text').textContent = t.footer;
+  const chips = document.querySelectorAll('#chips-style .chip');
+  chips.forEach((c,i) => { const sel = c.classList.contains('selected'); c.textContent = t.chips[i]; if(sel) c.classList.add('selected'); });
+}
+
+let currentStep = 1;
+function goStep(n) {
+  document.getElementById(`step${currentStep}`).classList.remove('active');
+  document.getElementById(`step${n}`).classList.add('active');
+  [1,2,3,4].forEach(i => {
+    const dot = document.getElementById(`dot${i}`);
+    dot.classList.remove('active','done');
+    if(i < n) dot.classList.add('done');
+    else if(i === n) dot.classList.add('active');
+  });
+  currentStep = n;
+  document.getElementById('planner-card').scrollIntoView({ behavior:'smooth', block:'start' });
+}
+
+function toggleChip(el) { el.classList.toggle('selected'); }
+function getChips() {
+  return [...document.querySelectorAll('#chips-style .chip.selected')].map(c=>c.textContent).join(', ') || '(keine Angabe)';
+}
+
+async function generatePlan() {
+  goStep(4);
+  document.getElementById('loading-view').style.display = 'block';
+  document.getElementById('result-view').style.display = 'none';
+
+  const r = document.getElementById('sel-region').value || 'offen';
+  const c = document.getElementById('sel-country').value || 'offen';
+  const d = document.getElementById('sel-duration').value || 'offen';
+  const p = document.getElementById('sel-people').value || 'offen';
+  const s = getChips();
+  const b = document.getElementById('sel-budget').value || 'offen';
+  const a = document.getElementById('sel-accom').value || 'offen';
+  const t = document.getElementById('sel-transport').value || 'offen';
+  const w = document.getElementById('txt-wishes').value || 'keine';
+
+  const prompt = T[lang].promptFn(r,c,d,p,s,b,a,t,w);
+
+  try {
+    // Calls the secure backend – API key stays hidden on the server
+    const res = await fetch('/api/plan', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ prompt })
+    });
+    const data = await res.json();
+    document.getElementById('loading-view').style.display = 'none';
+    document.getElementById('result-view').style.display = 'block';
+    if (data.result) {
+      document.getElementById('result-text').textContent = data.result;
+    } else {
+      document.getElementById('result-text').textContent = lang === 'de'
+        ? '⚠️ Fehler beim Generieren. Bitte versuche es erneut.'
+        : '⚠️ Error generating plan. Please try again.';
+    }
+  } catch(e) {
+    document.getElementById('loading-view').style.display = 'none';
+    document.getElementById('result-view').style.display = 'block';
+    document.getElementById('result-text').textContent = lang === 'de'
+      ? '⚠️ Verbindungsfehler. Bitte versuche es erneut.'
+      : '⚠️ Connection error. Please try again.';
+  }
+}
+
+function showPayment(isSub = false) {
+  // Hier kommt später dein Stripe Payment Link rein
+  alert(lang === 'de'
+    ? 'Stripe-Bezahlung wird hier eingebunden.\nIn der Live-Version öffnet sich das Stripe-Checkout-Fenster.'
+    : 'Stripe payment will be connected here.\nIn the live version, the Stripe checkout window opens.');
+}
+
+function resetAll() {
+  ['sel-region','sel-country','sel-duration','sel-people','sel-budget','sel-accom','sel-transport'].forEach(id => {
+    document.getElementById(id).value = '';
+  });
+  document.getElementById('txt-wishes').value = '';
+  document.querySelectorAll('.chip.selected').forEach(c => c.classList.remove('selected'));
+  document.getElementById('loading-view').style.display = 'block';
+  document.getElementById('result-view').style.display = 'none';
+}
+
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(e => { if(e.isIntersecting) e.target.classList.add('visible'); });
+}, { threshold: 0.1 });
+document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+</script>
+</body>
+</html>
