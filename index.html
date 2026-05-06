@@ -132,15 +132,23 @@ main{padding:0 24px 80px;max-width:700px;margin:0 auto}
 
 /* PREVIEW / PAYWALL */
 .preview-locked{position:relative;margin-top:0}
-.preview-blur{filter:blur(5px);pointer-events:none;user-select:none;opacity:0.55;max-height:180px;overflow:hidden}
-.preview-paywall{background:white;border-top:1px solid var(--border);padding:28px 24px 24px;text-align:center;box-shadow:0 -8px 32px rgba(255,255,255,0.95)}
-.preview-paywall-sticky{position:sticky;bottom:0;left:0;right:0;background:white;border-top:1px solid var(--border);padding:16px 24px;text-align:center;box-shadow:0 -4px 20px rgba(15,23,42,0.10);z-index:50}
+.preview-blur{filter:blur(6px);pointer-events:none;user-select:none;opacity:0.55}
+.preview-gradient{position:relative;margin-top:-80px;height:80px;background:linear-gradient(to bottom,transparent,white);pointer-events:none}
+.preview-paywall{background:white;padding:24px 24px 16px;text-align:center}
 .paywall-icon{font-size:28px;margin-bottom:8px}
 .paywall-title{font-size:17px;font-weight:700;color:var(--ink);letter-spacing:-0.3px;margin-bottom:6px}
 .paywall-sub{font-size:13px;color:var(--ink-mid);margin-bottom:16px;line-height:1.5;max-width:300px;margin-left:auto;margin-right:auto}
+.paywall-price{font-size:11px;color:var(--ink-light);margin-top:8px}
 .paywall-btn{background:var(--blue);color:white;border:none;padding:14px 32px;font-family:'Inter',sans-serif;font-size:15px;font-weight:600;cursor:pointer;border-radius:50px;transition:all 0.2s;box-shadow:0 4px 14px rgba(37,99,235,0.35);width:100%;max-width:320px}
 .paywall-btn:hover{background:var(--blue-dark);transform:translateY(-2px)}
-.paywall-price{font-size:11px;color:var(--ink-light);margin-top:8px}
+/* Sticky unlock bar – fixed to bottom of viewport, always visible while on step 4 */
+.unlock-bar{display:none;position:fixed;bottom:0;left:0;right:0;background:white;border-top:2px solid var(--blue);padding:14px 24px;text-align:center;box-shadow:0 -4px 24px rgba(15,23,42,0.12);z-index:100}
+.unlock-bar.visible{display:block}
+.unlock-bar-inner{max-width:700px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.unlock-bar-text{font-size:14px;font-weight:600;color:var(--ink);text-align:left}
+.unlock-bar-sub{font-size:12px;color:var(--ink-mid);font-weight:400}
+.unlock-bar-btn{background:var(--blue);color:white;border:none;padding:12px 28px;font-family:'Inter',sans-serif;font-size:14px;font-weight:600;cursor:pointer;border-radius:50px;transition:all 0.2s;box-shadow:0 3px 10px rgba(37,99,235,0.3);white-space:nowrap;flex-shrink:0}
+.unlock-bar-btn:hover{background:var(--blue-dark);transform:translateY(-1px)}
 .plan-maps-link{display:inline-flex;align-items:center;gap:4px;font-size:12px;color:var(--blue);text-decoration:none;font-weight:500;margin-top:6px;padding-left:30px;transition:opacity 0.2s}
 .plan-maps-link:hover{opacity:0.7;text-decoration:underline}
 .plan-maps-icon{font-size:12px}
@@ -340,22 +348,21 @@ footer{text-align:center;padding:32px 24px;border-top:1px solid var(--border);ma
         </div>
         <!-- Preview view -->
         <div id="preview-view" style="display:none">
+          <!-- Visible part: intro + morning + truncated lunch -->
           <div id="preview-plan-output"></div>
-          <!-- Blurred teaser -->
+          <!-- Blurred part: full remaining plan so user sees how much there is -->
           <div class="preview-locked">
             <div id="preview-blur-section" class="preview-blur"></div>
           </div>
-          <!-- Inline paywall block directly below blurred content -->
+          <!-- Gradient fade at bottom of blurred section -->
+          <div class="preview-gradient"></div>
+          <!-- Inline paywall info block -->
           <div class="preview-paywall">
             <div class="paywall-icon">🔒</div>
             <div class="paywall-title" id="paywall-title">Unlock your full travel plan</div>
             <div class="paywall-sub" id="paywall-sub">Get the complete day-by-day itinerary, all Google Maps links, PDF &amp; Excel download for just $7.</div>
             <button class="paywall-btn" onclick="goStep(5)" id="paywall-btn">✨ Unlock Full Plan — $7</button>
             <div class="paywall-price" id="paywall-price">One-time payment · No subscription · Instant access</div>
-          </div>
-          <!-- Sticky CTA that follows while scrolling -->
-          <div class="preview-paywall-sticky" id="sticky-paywall">
-            <button class="paywall-btn" onclick="goStep(5)" style="font-size:14px;padding:12px 28px;max-width:280px">✨ Unlock Full Plan — $7</button>
           </div>
         </div>
         <div class="btn-row" style="margin-top:8px">
@@ -689,7 +696,17 @@ function setLang(l){
   document.getElementById('fl-imp').textContent=t.flImp;document.getElementById('fl-agb').textContent=t.flAgb;document.getElementById('fl-priv').textContent=t.flPriv;
   document.getElementById('footer-text').textContent=t.footer;
   document.getElementById('imp-title').textContent=t.impTitle;document.getElementById('agb-title').textContent=t.agbTitle;document.getElementById('priv-title').textContent=t.privTitle;
-  if(document.getElementById('paywall-title')){document.getElementById('paywall-title').textContent=lang==='de'?'Vollständigen Reiseplan freischalten':'Unlock your full travel plan';document.getElementById('paywall-sub').textContent=lang==='de'?'Erhalte den kompletten Tagesplan, alle Google Maps Links, PDF & Excel Download für nur $7.':'Get the complete day-by-day itinerary, all Google Maps links, PDF & Excel download for just $7.';document.getElementById('paywall-btn').textContent=lang==='de'?'✨ Vollständigen Plan freischalten – $7':'✨ Unlock Full Plan — $7';document.getElementById('paywall-price').textContent=lang==='de'?'Einmalige Zahlung · Kein Abo · Sofortiger Zugang':'One-time payment · No subscription · Instant access';}
+  if(document.getElementById('paywall-title')){
+    document.getElementById('paywall-title').textContent=lang==='de'?'Vollständigen Reiseplan freischalten':'Unlock your full travel plan';
+    document.getElementById('paywall-sub').textContent=lang==='de'?'Erhalte den kompletten Tagesplan, alle Google Maps Links, PDF & Excel Download für nur $7.':'Get the complete day-by-day itinerary, all Google Maps links, PDF & Excel download for just $7.';
+    document.getElementById('paywall-btn').textContent=lang==='de'?'✨ Vollständigen Plan freischalten – $7':'✨ Unlock Full Plan — $7';
+    document.getElementById('paywall-price').textContent=lang==='de'?'Einmalige Zahlung · Kein Abo · Sofortiger Zugang':'One-time payment · No subscription · Instant access';
+  }
+  if(document.getElementById('ubar-title')){
+    document.getElementById('ubar-title').textContent=lang==='de'?'🔒 Dein Plan ist bereit zum Freischalten':'🔒 Your plan is ready to unlock';
+    document.getElementById('ubar-sub').textContent=lang==='de'?'Einmalige Zahlung · Kein Abo':'One-time payment · No subscription';
+    document.getElementById('ubar-btn').textContent=lang==='de'?'✨ Vollständigen Plan freischalten – $7':'✨ Unlock Full Plan — $7';
+  }
 }
 
 function populateSelect(id,opts){
@@ -751,6 +768,9 @@ function goStep(n){
   document.getElementById('progress-fill').style.width=((n/TOTAL_STEPS)*100)+'%';
   currentStep=n;
   document.getElementById('planner').scrollIntoView({behavior:'smooth',block:'start'});
+  // Show sticky unlock bar only on step 4 (preview)
+  const bar=document.getElementById('unlock-bar');
+  if(bar) bar.classList.toggle('visible', n===4);
 }
 
 function getChips(){
@@ -875,18 +895,14 @@ function renderPreview(text){
   container.innerHTML='';
   renderLinesIntoContainer(visibleLines, container);
 
-  // Blurred part: rest of day 1 + subsequent days
+  // Blurred part: ALL remaining content after the lunch cutoff
+  // Show everything so user sees exactly how much they're getting
   let blurLines=[];
   let passedLunch=false;
-  let blurDayCount=0;
   for(const line of lines){
     if(!passedLunch){
       if(isLunchLine(line)) passedLunch=true;
       continue;
-    }
-    if(isDayLine(line)){
-      blurDayCount++;
-      if(blurDayCount>=3) break; // limit blur content
     }
     blurLines.push(line);
   }
@@ -895,7 +911,7 @@ function renderPreview(text){
   if(blurLines.length>0){
     renderLinesIntoContainer(blurLines, blurContainer);
   } else {
-    blurContainer.innerHTML='<div style="height:160px"></div>';
+    blurContainer.innerHTML='<div style="height:200px"></div>';
   }
 }
 
@@ -1200,5 +1216,16 @@ document.querySelectorAll('.modal-overlay').forEach(m=>{m.addEventListener('clic
 // Init
 setLang('en');
 </script>
+<!-- Sticky unlock bar – shown while user is on step 4 preview -->
+<div class="unlock-bar" id="unlock-bar">
+  <div class="unlock-bar-inner">
+    <div>
+      <div class="unlock-bar-text" id="ubar-title">🔒 Your plan is ready to unlock</div>
+      <div class="unlock-bar-sub" id="ubar-sub">One-time payment · No subscription</div>
+    </div>
+    <button class="unlock-bar-btn" onclick="goStep(5)" id="ubar-btn">✨ Unlock Full Plan — $7</button>
+  </div>
+</div>
+
 </body>
 </html>
