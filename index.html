@@ -129,6 +129,17 @@ main{padding:0 24px 80px;max-width:700px;margin:0 auto}
 .plan-section-title{font-size:11px;font-weight:700;color:var(--ink-mid);letter-spacing:0.06em;text-transform:uppercase}
 .plan-section-text{font-size:14px;line-height:1.7;color:var(--ink);font-weight:400;padding-left:30px}
 .plan-tip{background:#FFFBEB;border-left:3px solid var(--orange);padding:12px 16px;font-size:13px;color:#92400E;line-height:1.6;font-style:italic;border-radius:0 var(--radius-xs) var(--radius-xs) 0}
+
+/* PREVIEW / PAYWALL */
+.preview-locked{position:relative;margin-top:8px}
+.preview-blur{filter:blur(5px);pointer-events:none;user-select:none;opacity:0.6}
+.preview-paywall{position:absolute;bottom:0;left:0;right:0;height:260px;background:linear-gradient(to bottom,transparent 0%,rgba(255,255,255,0.97) 40%,white 70%);display:flex;flex-direction:column;align-items:center;justify-content:flex-end;padding-bottom:28px;text-align:center}
+.paywall-icon{font-size:32px;margin-bottom:10px}
+.paywall-title{font-size:18px;font-weight:700;color:var(--ink);letter-spacing:-0.3px;margin-bottom:6px}
+.paywall-sub{font-size:14px;color:var(--ink-mid);margin-bottom:20px;line-height:1.5;max-width:320px}
+.paywall-btn{background:var(--blue);color:white;border:none;padding:14px 32px;font-family:'Inter',sans-serif;font-size:15px;font-weight:600;cursor:pointer;border-radius:50px;transition:all 0.2s;box-shadow:0 4px 14px rgba(37,99,235,0.35)}
+.paywall-btn:hover{background:var(--blue-dark);transform:translateY(-2px)}
+.paywall-price{font-size:12px;color:var(--ink-light);margin-top:10px}
 .plan-maps-link{display:inline-flex;align-items:center;gap:4px;font-size:12px;color:var(--blue);text-decoration:none;font-weight:500;margin-top:6px;padding-left:30px;transition:opacity 0.2s}
 .plan-maps-link:hover{opacity:0.7;text-decoration:underline}
 .plan-maps-icon{font-size:12px}
@@ -301,7 +312,7 @@ footer{text-align:center;padding:32px 24px;border-top:1px solid var(--border);ma
         </div>
         <div class="btn-row">
           <button class="btn-back" onclick="goStep(2)" id="btn-back3">← Back</button>
-          <button class="btn-primary" onclick="goStep(4)" id="btn-s3">Next →</button>
+          <button class="btn-primary" onclick="generatePlan()" id="btn-s3">Next →</button>
         </div>
       </div>
     </div>
@@ -309,9 +320,49 @@ footer{text-align:center;padding:32px 24px;border-top:1px solid var(--border);ma
     <!-- STEP 4: PAYMENT -->
     <div class="step-panel" id="step4">
       <div class="step-header">
-        <div class="step-meta"><div class="step-num">4</div><span class="step-label" id="s4-label">Payment</span></div>
-        <div class="step-title" id="s4-title">One small step for your wallet…</div>
-        <div class="step-desc" id="s4-desc">…one giant leap for your next adventure. Your plan is generated instantly after payment.</div>
+        <div class="step-meta"><div class="step-num">4</div><span class="step-label" id="s4-label">Your Plan</span></div>
+        <div class="step-title" id="s4-title">Here's a preview of your plan!</div>
+        <div class="step-desc" id="s4-desc">Unlock the full plan and all downloads for just $7.</div>
+      </div>
+      <div class="step-body" style="padding-top:0">
+        <!-- Loading view -->
+        <div id="preview-loading" class="loading-state" style="display:none">
+          <div class="spinner"></div>
+          <div class="loading-title" id="preview-loading-title">Building your perfect trip…</div>
+          <div class="loading-sub" id="preview-loading-sub">This takes about 10–15 seconds</div>
+          <div class="loading-steps">
+            <div class="loading-step active" id="pls1"><div class="loading-step-dot"></div><span id="pls1-text">Analyzing your preferences</span></div>
+            <div class="loading-step" id="pls2"><div class="loading-step-dot"></div><span id="pls2-text">Crafting your itinerary</span></div>
+            <div class="loading-step" id="pls3"><div class="loading-step-dot"></div><span id="pls3-text">Adding local tips & maps</span></div>
+            <div class="loading-step" id="pls4"><div class="loading-step-dot"></div><span id="pls4-text">Finalizing your plan</span></div>
+          </div>
+        </div>
+        <!-- Preview view -->
+        <div id="preview-view" style="display:none">
+          <div id="preview-plan-output"></div>
+          <div class="preview-locked">
+            <div id="preview-blur-section" class="preview-blur"></div>
+            <div class="preview-paywall">
+              <div class="paywall-icon">🔒</div>
+              <div class="paywall-title" id="paywall-title">Unlock your full travel plan</div>
+              <div class="paywall-sub" id="paywall-sub">Get the complete day-by-day itinerary, all Google Maps links, PDF & Excel download for just $7.</div>
+              <button class="paywall-btn" onclick="goStep(5)" id="paywall-btn">✨ Unlock Full Plan — $7</button>
+              <div class="paywall-price" id="paywall-price">One-time payment · No subscription · Instant access</div>
+            </div>
+          </div>
+        </div>
+        <div class="btn-row" style="margin-top:8px">
+          <button class="btn-back" onclick="goStep(3)" id="btn-back4">← Back</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP 5: PAYMENT -->
+    <div class="step-panel" id="step5">
+      <div class="step-header">
+        <div class="step-meta"><div class="step-num">5</div><span class="step-label" id="s5-label">Payment</span></div>
+        <div class="step-title" id="s5-title">One small step for your wallet…</div>
+        <div class="step-desc" id="s5-desc">…one giant leap for your next adventure. Unlock the full plan instantly.</div>
       </div>
       <div class="step-body">
         <div class="payment-single">
@@ -325,17 +376,17 @@ footer{text-align:center;padding:32px 24px;border-top:1px solid var(--border);ma
             <li>PDF & Excel export</li>
             <li>Share with your travel buddy</li>
           </ul>
-          <button class="btn-primary" style="width:100%;justify-content:center;border-radius:10px;padding:16px" onclick="proceedToPayment()" id="btn-pay">💳 Pay $7 & Create My Plan</button>
+          <button class="btn-primary" style="width:100%;justify-content:center;border-radius:10px;padding:16px" onclick="proceedToPayment()" id="btn-pay">💳 Pay $7 & Unlock Full Plan</button>
           <div class="payment-note">🔒 <span id="pay-note">Secure payment via Stripe · SSL encrypted · Instant delivery</span></div>
         </div>
         <div class="btn-row" style="margin-top:0">
-          <button class="btn-back" onclick="goStep(3)" id="btn-back4">← Back</button>
+          <button class="btn-back" onclick="goStep(4)" id="btn-back5">← Back</button>
         </div>
       </div>
     </div>
 
-    <!-- STEP 5: RESULT -->
-    <div class="step-panel" id="step5">
+    <!-- STEP 6: FULL RESULT -->
+    <div class="step-panel" id="step6">
       <div id="loading-view" class="loading-state">
         <div class="spinner"></div>
         <div class="loading-title" id="loading-title">Building your perfect trip…</div>
@@ -506,7 +557,7 @@ const T={
     s1label:'Destination',s1title:'Where are you headed?',s1desc:'Choose your region, country, and city — or let us surprise you.',
     s2label:'Travel Style',s2title:'What kind of traveler are you?',s2desc:'Pick your vibe — choose as many as you like.',
     s3label:'Details',s3title:'Almost there!',s3desc:'Just a few more details to make your plan perfect.',
-    s4label:'Payment',s4title:'One small step for your wallet…',s4desc:'…one giant leap for your next adventure. Your plan is generated instantly after payment.',
+    s4label:'Your Plan',s4title:"Here's a preview of your plan!",s4desc:'Unlock the full plan and all downloads for just $7.',s5label:'Payment',s5title:'One small step for your wallet…',s5desc:'…one giant leap for your next adventure. Unlock the full plan instantly.',
     lRegion:'Region',lCountry:'Country (optional)',lCity:'City (optional)',lDuration:'Duration',lPeople:'Travelers',lStyle:'Your interests',lBudget:'Daily budget per person',lAccom:'Accommodation',lTransport:'Getting around',lWishes:'Anything else? (optional)',
     wishPH:'e.g. vegetarian food, wheelchair accessible, avoid tourist traps...',
     durations:['— Select —','3–4 days (Weekend)','5–7 days (1 week)','8–14 days (2 weeks)','15–21 days (3 weeks)','3+ weeks'],
@@ -550,7 +601,7 @@ Tip: One specific, genuinely useful insider tip in 1-2 sentences. 💡
     s1label:'Destination',s1title:'Wohin geht die Reise?',s1desc:'Wähle deine Region, Land und Stadt — oder lass dich überraschen.',
     s2label:'Reisestil',s2title:'Was für ein Reisender bist du?',s2desc:'Wähle alles, was auf dich zutrifft.',
     s3label:'Details',s3title:'Fast geschafft!',s3desc:'Noch ein paar Details für deinen perfekten Plan.',
-    s4label:'Zahlung',s4title:'Ein kleiner Schritt für dein Portemonnaie…',s4desc:'…ein riesiger Sprung für dein nächstes Abenteuer. Dein Plan wird sofort nach der Zahlung erstellt.',
+    s4label:'Dein Plan',s4title:'Hier ist eine Vorschau deines Plans!',s4desc:'Schalte den vollständigen Plan für nur $7 frei.',s5label:'Zahlung',s5title:'Ein kleiner Schritt für dein Portemonnaie…',s5desc:'…ein riesiger Sprung für dein nächstes Abenteuer. Schalte den vollständigen Plan sofort frei.',
     lRegion:'Region',lCountry:'Land (optional)',lCity:'Stadt (optional)',lDuration:'Dauer',lPeople:'Reisende',lStyle:'Deine Interessen',lBudget:'Tagesbudget pro Person',lAccom:'Unterkunft',lTransport:'Fortbewegung',lWishes:'Sonst noch etwas? (optional)',
     wishPH:'z.B. vegetarisches Essen, barrierefrei, keine Touristenfallen...',
     durations:['— Wählen —','3–4 Tage (Wochenende)','5–7 Tage (1 Woche)','8–14 Tage (2 Wochen)','15–21 Tage (3 Wochen)','3+ Wochen'],
@@ -592,6 +643,7 @@ function setLang(l){
   document.getElementById('s2-label').textContent=t.s2label;document.getElementById('s2-title').textContent=t.s2title;document.getElementById('s2-desc').textContent=t.s2desc;
   document.getElementById('s3-label').textContent=t.s3label;document.getElementById('s3-title').textContent=t.s3title;document.getElementById('s3-desc').textContent=t.s3desc;
   document.getElementById('s4-label').textContent=t.s4label;document.getElementById('s4-title').textContent=t.s4title;document.getElementById('s4-desc').textContent=t.s4desc;
+  if(document.getElementById('s5-label')&&t.s5label){document.getElementById('s5-label').textContent=t.s5label;document.getElementById('s5-title').textContent=t.s5title;document.getElementById('s5-desc').textContent=t.s5desc;}
   // Labels
   document.getElementById('l-region').textContent=t.lRegion;
   document.getElementById('l-country').innerHTML=t.lCountry.replace(' (optional)',' <span style="color:var(--ink-light);font-weight:400">(optional)</span>');
@@ -630,6 +682,7 @@ function setLang(l){
   document.getElementById('fl-imp').textContent=t.flImp;document.getElementById('fl-agb').textContent=t.flAgb;document.getElementById('fl-priv').textContent=t.flPriv;
   document.getElementById('footer-text').textContent=t.footer;
   document.getElementById('imp-title').textContent=t.impTitle;document.getElementById('agb-title').textContent=t.agbTitle;document.getElementById('priv-title').textContent=t.privTitle;
+  if(document.getElementById('paywall-title')){document.getElementById('paywall-title').textContent=lang==='de'?'Vollständigen Reiseplan freischalten':'Unlock your full travel plan';document.getElementById('paywall-sub').textContent=lang==='de'?'Erhalte den kompletten Tagesplan, alle Google Maps Links, PDF & Excel Download für nur $7.':'Get the complete day-by-day itinerary, all Google Maps links, PDF & Excel download for just $7.';document.getElementById('paywall-btn').textContent=lang==='de'?'✨ Vollständigen Plan freischalten – $7':'✨ Unlock Full Plan — $7';document.getElementById('paywall-price').textContent=lang==='de'?'Einmalige Zahlung · Kein Abo · Sofortiger Zugang':'One-time payment · No subscription · Instant access';}
 }
 
 function populateSelect(id,opts){
@@ -684,7 +737,7 @@ function onCountryChange(){
    STEPS
 ═══════════════════════════════════════════════ */
 let currentStep=1;
-const TOTAL_STEPS=5;
+const TOTAL_STEPS=6;
 function goStep(n){
   document.getElementById('step'+currentStep).classList.remove('active');
   document.getElementById('step'+n).classList.add('active');
@@ -718,22 +771,40 @@ function animateLoading(){
    PAYMENT
 ═══════════════════════════════════════════════ */
 function proceedToPayment(){
-  // STRIPE INTEGRATION: Replace this alert with your Stripe Payment Link:
+  // STRIPE INTEGRATION: Replace this with your Stripe Payment Link:
   // window.location.href = 'https://buy.stripe.com/YOUR_PAYMENT_LINK';
   const msg=lang==='de'
-    ?'Stripe-Zahlung wird hier eingebunden.\n\nIn der Live-Version öffnet sich das Stripe-Checkout-Fenster.\n\nFür den Test: OK klicken um den Plan zu generieren.'
-    :'Stripe payment will be connected here.\n\nIn the live version, Stripe checkout opens.\n\nFor testing: Click OK to generate the plan.';
-  if(confirm(msg))generatePlan();
+    ?'Stripe-Zahlung wird hier eingebunden.\n\nIn der Live-Version öffnet sich das Stripe-Checkout-Fenster.\n\nFür den Test: OK klicken um den vollen Plan freizuschalten.'
+    :'Stripe payment will be connected here.\n\nIn the live version, Stripe checkout opens.\n\nFor testing: Click OK to unlock the full plan.';
+  if(confirm(msg))unlockFullPlan();
+}
+
+function unlockFullPlan(){
+  goStep(6);
+  document.getElementById('loading-view').style.display='none';
+  document.getElementById('result-view').style.display='block';
+  renderPlan(rawPlanText);
 }
 
 /* ═══════════════════════════════════════════════
    GENERATE
 ═══════════════════════════════════════════════ */
 async function generatePlan(){
-  goStep(5);
-  document.getElementById('loading-view').style.display='block';
-  document.getElementById('result-view').style.display='none';
-  const iv=animateLoading();
+  // Go to step 4 and show loading
+  goStep(4);
+  document.getElementById('preview-loading').style.display='block';
+  document.getElementById('preview-view').style.display='none';
+  // Animate preview loading steps
+  const psteps=['pls1','pls2','pls3','pls4'];
+  let pi=0;
+  psteps.forEach(id=>document.getElementById(id).className='loading-step');
+  document.getElementById('pls1').className='loading-step active';
+  const iv=setInterval(()=>{
+    if(pi<psteps.length-1){
+      document.getElementById(psteps[pi]).className='loading-step done';
+      pi++;document.getElementById(psteps[pi]).className='loading-step active';
+    }else{clearInterval(iv);}
+  },2500);
   const r=document.getElementById('sel-region').value||'flexible';
   const c=document.getElementById('sel-country').value||'';
   const ci=document.getElementById('sel-city').value||'';
@@ -749,16 +820,111 @@ async function generatePlan(){
     const res=await fetch('/api/plan',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({prompt})});
     const data=await res.json();
     clearInterval(iv);
-    document.getElementById('loading-view').style.display='none';
-    document.getElementById('result-view').style.display='block';
-    if(data.result){renderPlan(data.result);}
-    else{document.getElementById('result-plan').textContent='⚠️ Error generating plan. Please try again.';}
+    document.getElementById('preview-loading').style.display='none';
+    if(data.result){
+      renderPreview(data.result);
+      document.getElementById('preview-view').style.display='block';
+    }else{
+      document.getElementById('preview-loading').innerHTML='<p style="color:red;padding:20px">⚠️ Error generating plan. Please try again.</p>';
+    }
   }catch(e){
     clearInterval(iv);
-    document.getElementById('loading-view').style.display='none';
-    document.getElementById('result-view').style.display='block';
-    document.getElementById('result-plan').textContent='⚠️ Connection error. Please try again.';
+    document.getElementById('preview-loading').innerHTML='<p style="color:red;padding:20px">⚠️ Connection error. Please try again.</p>';
   }
+}
+
+/* ═══════════════════════════════════════════════
+   RENDER PREVIEW (intro + day 1 visible, rest blurred)
+═══════════════════════════════════════════════ */
+function renderPreview(text){
+  rawPlanText=text;
+  // Build the visible part: intro + first day only
+  const lines=text.split('\n').map(l=>l.trim()).filter(l=>l.length>0);
+  const isDayLine=l=>/^(DAY|TAG)\s+\d+/i.test(l);
+  let visibleLines=[];
+  let dayCount=0;
+  for(const line of lines){
+    if(isDayLine(line)){
+      dayCount++;
+      if(dayCount>1) break; // stop after first day
+    }
+    visibleLines.push(line);
+  }
+  // Render visible part into preview-plan-output
+  const container=document.getElementById('preview-plan-output');
+  container.innerHTML='';
+  renderLinesIntoContainer(visibleLines, container);
+
+  // Build blurred part: days 2+ (just render a few lines as teaser)
+  const blurContainer=document.getElementById('preview-blur-section');
+  blurContainer.innerHTML='';
+  let blurLines=[];
+  let inBlur=false;
+  let blurDays=0;
+  for(const line of lines){
+    if(isDayLine(line)){
+      if(inBlur) blurDays++;
+      inBlur=true;
+    }
+    if(inBlur && blurDays<3) blurLines.push(line);
+  }
+  if(blurLines.length>0){
+    renderLinesIntoContainer(blurLines, blurContainer);
+  } else {
+    // Pad with dummy content if only 1 day
+    blurContainer.innerHTML='<div style="height:200px"></div>';
+  }
+}
+
+function renderLinesIntoContainer(lines, container){
+  const isDayLine=l=>/^(DAY|TAG)\s+\d+/i.test(l);
+  const isSectionLine=l=>/^(Morning|Morgen|Lunch|Mittag|Afternoon|Nachmittag|Evening|Abend|Tip|Tipp):/i.test(l);
+  let introLines=[],dayBlocks=[],currentDay=null;
+  for(const line of lines){
+    if(isDayLine(line)){if(currentDay)dayBlocks.push(currentDay);currentDay={title:line,sections:[]};}
+    else if(currentDay){
+      if(isSectionLine(line)){const colon=line.indexOf(':');currentDay.sections.push({label:line.slice(0,colon),text:line.slice(colon+1).trim()});}
+      else if(currentDay.sections.length>0){currentDay.sections[currentDay.sections.length-1].text+=' '+line;}
+      else{currentDay.sections.push({label:'',text:line});}
+    }else{introLines.push(line);}
+  }
+  if(currentDay)dayBlocks.push(currentDay);
+  if(introLines.length>0){
+    const intro=document.createElement('div');intro.className='plan-intro';
+    intro.textContent=introLines.join(' ');container.appendChild(intro);
+  }
+  dayBlocks.forEach((day,dayIdx)=>{
+    const dayEl=document.createElement('div');dayEl.className='plan-day';
+    const header=document.createElement('div');header.className='plan-day-header';
+    const num=document.createElement('span');num.className='plan-day-num';num.textContent='Day '+(dayIdx+1);
+    header.appendChild(num);
+    header.appendChild(document.createTextNode(' '+day.title.replace(/^(DAY|TAG)\s+\d+:\s*/i,'')));
+    dayEl.appendChild(header);
+    const body=document.createElement('div');body.className='plan-day-body';
+    day.sections.forEach(sec=>{
+      const isTip=/^(Tip|Tipp)$/i.test(sec.label);
+      const secEl=document.createElement('div');secEl.className='plan-section';
+      if(sec.label){
+        const head=document.createElement('div');head.className='plan-section-head';
+        const icon=document.createElement('span');icon.className='plan-section-icon';
+        icon.textContent=SECTION_ICONS[sec.label.toLowerCase()]||'📌';
+        const title=document.createElement('span');title.className='plan-section-title';title.textContent=sec.label;
+        head.appendChild(icon);head.appendChild(title);secEl.appendChild(head);
+      }
+      if(isTip){
+        const tipEl=document.createElement('div');tipEl.className='plan-tip';tipEl.textContent=sec.text.replace(/\[.*?\]\(.*?\)/g,'').trim();
+        secEl.appendChild(tipEl);
+      }else{
+        const textEl=document.createElement('div');textEl.className='plan-section-text';
+        let html=sec.text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+        html=html.replace(/🗺️\s*\[Maps\]\((https?:\/\/[^)]+)\)/g,'<a href="$1" target="_blank" rel="noopener" class="plan-maps-link">🗺️ Maps</a>');
+        html=html.replace(/\[🗺️?\s*([^\]]*)\]\((https?:\/\/[^)]+)\)/g,'<a href="$2" target="_blank" rel="noopener" class="plan-maps-link">🗺️ $1</a>');
+        textEl.innerHTML=html;secEl.appendChild(textEl);
+      }
+      body.appendChild(secEl);
+    });
+    dayEl.appendChild(body);container.appendChild(dayEl);
+  });
 }
 
 /* ═══════════════════════════════════════════════
@@ -998,6 +1164,10 @@ function resetAll(){
   document.getElementById('result-view').style.display='none';
   document.getElementById('result-plan').innerHTML='';
   document.getElementById('progress-fill').style.width='20%';
+  if(document.getElementById('preview-loading'))document.getElementById('preview-loading').style.display='none';
+  if(document.getElementById('preview-view'))document.getElementById('preview-view').style.display='none';
+  if(document.getElementById('preview-plan-output'))document.getElementById('preview-plan-output').innerHTML='';
+  if(document.getElementById('preview-blur-section'))document.getElementById('preview-blur-section').innerHTML='';
   rawPlanText='';
 }
 function openModal(id){document.getElementById('modal-'+id).classList.add('open');}
