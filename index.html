@@ -4,243 +4,333 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>GAGglobetrotter – AI Travel Planner</title>
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
-:root{--sand:#F5EFE0;--sand-dark:#E8DFC8;--ink:#1A1410;--terra:#C4602A;--terra-light:#E8845A;--sage:#7A9E7E;--gold:#BFA46A;--white:#FDFAF4}
+:root{
+  --blue:#2563EB;--blue-dark:#1D4ED8;--blue-light:#EFF6FF;
+  --ink:#0F172A;--ink-mid:#475569;--ink-light:#94A3B8;
+  --border:#E2E8F0;--bg:#F8FAFC;--white:#FFFFFF;
+  --green:#10B981;--orange:#F59E0B;--red:#EF4444;
+  --shadow-sm:0 1px 3px rgba(0,0,0,0.08),0 1px 2px rgba(0,0,0,0.04);
+  --shadow:0 4px 16px rgba(0,0,0,0.08),0 2px 6px rgba(0,0,0,0.04);
+  --shadow-lg:0 12px 40px rgba(0,0,0,0.10),0 4px 12px rgba(0,0,0,0.06);
+  --radius:14px;--radius-sm:8px;--radius-xs:6px;
+}
 *{margin:0;padding:0;box-sizing:border-box}
-body{font-family:'DM Sans',sans-serif;background:var(--sand);color:var(--ink);min-height:100vh;overflow-x:hidden}
-.lang-toggle{position:fixed;top:20px;right:24px;z-index:200;display:flex;background:var(--ink);border-radius:20px;overflow:hidden}
-.lang-btn{background:none;border:none;color:rgba(245,239,224,0.5);font-family:'DM Sans',sans-serif;font-size:12px;font-weight:500;padding:8px 14px;cursor:pointer;transition:all 0.2s;letter-spacing:0.05em}
-.lang-btn.active{background:var(--terra);color:var(--sand)}
-header{padding:60px 40px 0;text-align:center}
-.logo{font-family:'Cormorant Garamond',serif;font-size:13px;letter-spacing:0.3em;text-transform:uppercase;color:var(--terra);margin-bottom:28px}
-.hero-title{font-family:'Cormorant Garamond',serif;font-size:clamp(44px,8vw,90px);font-weight:300;line-height:0.92;letter-spacing:-0.02em;margin-bottom:24px}
-.hero-title em{font-style:italic;color:var(--terra)}
-.hero-sub{font-size:15px;font-weight:300;color:rgba(26,20,16,0.6);max-width:480px;margin:0 auto 60px;line-height:1.7}
-.deco-line{width:1px;height:60px;background:linear-gradient(to bottom,transparent,var(--terra),transparent);margin:0 auto 60px}
-.planner-card{max-width:720px;margin:0 auto 32px;background:var(--white);border-radius:4px;padding:56px 64px;position:relative;box-shadow:0 4px 60px rgba(26,20,16,0.08)}
-.planner-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--terra),var(--gold),var(--terra-light))}
-.card-label{font-size:11px;font-weight:500;letter-spacing:0.25em;text-transform:uppercase;color:var(--terra);margin-bottom:32px}
-.steps-row{display:flex;margin-bottom:48px;position:relative}
-.steps-row::before{content:'';position:absolute;top:16px;left:16px;right:16px;height:1px;background:var(--sand-dark)}
-.step-item{flex:1;text-align:center}
-.step-dot{width:32px;height:32px;border-radius:50%;border:1.5px solid var(--sand-dark);background:var(--white);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:500;color:rgba(26,20,16,0.35);margin:0 auto;position:relative;z-index:1;transition:all 0.3s}
-.step-dot.active{background:var(--terra);border-color:var(--terra);color:var(--white)}
-.step-dot.done{background:var(--sage);border-color:var(--sage);color:var(--white)}
-.step-name{font-size:10px;color:rgba(26,20,16,0.4);margin-top:8px;letter-spacing:0.05em}
-.step-panel{display:none}
-.step-panel.active{display:block;animation:fadeUp 0.4s ease}
-@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
-.step-title{font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:400;margin-bottom:6px}
-.step-desc{font-size:14px;color:rgba(26,20,16,0.5);margin-bottom:32px;font-weight:300}
-.field-group{margin-bottom:20px}
-.field-label{font-size:11px;font-weight:500;letter-spacing:0.15em;text-transform:uppercase;color:rgba(26,20,16,0.5);margin-bottom:8px;display:block}
-.field-select{width:100%;padding:14px 18px;background:var(--sand);border:1.5px solid var(--sand-dark);border-radius:3px;font-family:'DM Sans',sans-serif;font-size:14px;color:var(--ink);appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23C4602A' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 18px center;cursor:pointer;transition:border-color 0.2s}
-.field-select:focus{outline:none;border-color:var(--terra)}
-.fields-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
-.field-textarea{width:100%;padding:14px 18px;background:var(--sand);border:1.5px solid var(--sand-dark);border-radius:3px;font-family:'DM Sans',sans-serif;font-size:14px;color:var(--ink);resize:none;min-height:100px;line-height:1.6;transition:border-color 0.2s}
-.field-textarea:focus{outline:none;border-color:var(--terra)}
-.field-textarea::placeholder{color:rgba(26,20,16,0.35)}
-.chips-row{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:20px}
-.chip{padding:10px 18px;border:1.5px solid var(--sand-dark);border-radius:40px;font-size:13px;cursor:pointer;transition:all 0.2s;background:var(--sand);color:var(--ink);user-select:none}
-.chip:hover{border-color:var(--terra);color:var(--terra)}
-.chip.selected{background:var(--terra);border-color:var(--terra);color:var(--white)}
-.btn-row{display:flex;gap:12px;margin-top:36px;align-items:center;flex-wrap:wrap}
-.btn-primary{background:var(--terra);color:var(--white);border:none;padding:16px 36px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;letter-spacing:0.1em;text-transform:uppercase;cursor:pointer;border-radius:2px;transition:all 0.2s}
-.btn-primary:hover{background:var(--terra-light);transform:translateY(-1px)}
-.btn-back{background:none;border:none;font-family:'DM Sans',sans-serif;font-size:13px;color:rgba(26,20,16,0.4);cursor:pointer;padding:16px 0;transition:color 0.2s}
-.btn-back:hover{color:var(--ink)}
-.btn-outline{background:none;border:1.5px solid var(--terra);color:var(--terra);padding:12px 20px;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:500;letter-spacing:0.1em;text-transform:uppercase;cursor:pointer;border-radius:2px;transition:all 0.2s}
-.btn-outline:hover{background:var(--terra);color:var(--white)}
-.btn-sage{background:none;border:1.5px solid var(--sage);color:var(--sage);padding:12px 20px;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:500;letter-spacing:0.1em;text-transform:uppercase;cursor:pointer;border-radius:2px;transition:all 0.2s}
-.btn-sage:hover{background:var(--sage);color:var(--white)}
+body{font-family:'Inter',system-ui,-apple-system,'SF Pro Display',sans-serif;background:var(--white);color:var(--ink);min-height:100vh;overflow-x:hidden;-webkit-font-smoothing:antialiased}
 
-/* PAYMENT STEP */
-.payment-options{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:28px}
-.payment-option{border:2px solid var(--sand-dark);border-radius:4px;padding:28px 24px;cursor:pointer;transition:all 0.2s;background:var(--sand);position:relative;text-align:center}
-.payment-option:hover{border-color:var(--terra)}
-.payment-option.selected{border-color:var(--terra);background:rgba(196,96,42,0.05)}
-.payment-option.selected::after{content:'✦';position:absolute;top:12px;right:14px;color:var(--terra);font-size:12px}
-.payment-option-name{font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:400;margin-bottom:6px}
-.payment-option-price{font-family:'Cormorant Garamond',serif;font-size:42px;font-weight:300;color:var(--terra);line-height:1;margin-bottom:4px}
-.payment-option-price sup{font-size:18px;vertical-align:top;margin-top:8px}
-.payment-option-desc{font-size:12px;color:rgba(26,20,16,0.5);font-weight:300;line-height:1.5;margin-top:8px}
-.payment-note{font-size:13px;color:rgba(26,20,16,0.5);text-align:center;margin-bottom:4px;font-weight:300}
-.payment-secure{font-size:11px;color:rgba(26,20,16,0.35);text-align:center;letter-spacing:0.05em}
+/* NAV */
+nav{position:fixed;top:0;left:0;right:0;z-index:200;background:rgba(255,255,255,0.85);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:0 32px;height:60px;display:flex;align-items:center;justify-content:space-between}
+.nav-logo{font-size:17px;font-weight:700;color:var(--ink);letter-spacing:-0.3px}
+.nav-logo span{color:var(--blue)}
+.lang-toggle{display:flex;background:var(--bg);border:1px solid var(--border);border-radius:20px;overflow:hidden;padding:3px;gap:2px}
+.lang-btn{background:none;border:none;font-family:'Inter',sans-serif;font-size:12px;font-weight:600;padding:5px 12px;cursor:pointer;border-radius:14px;transition:all 0.2s;color:var(--ink-light);letter-spacing:0.03em}
+.lang-btn.active{background:var(--white);color:var(--blue);box-shadow:var(--shadow-sm)}
+
+/* HERO */
+.hero{padding:120px 24px 80px;text-align:center;max-width:700px;margin:0 auto}
+.hero-eyebrow{display:inline-flex;align-items:center;gap:8px;background:var(--blue-light);color:var(--blue);font-size:12px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;padding:6px 14px;border-radius:20px;margin-bottom:24px}
+.hero-title{font-size:clamp(36px,6vw,64px);font-weight:800;line-height:1.05;letter-spacing:-1.5px;color:var(--ink);margin-bottom:20px}
+.hero-title .accent{color:var(--blue)}
+.hero-sub{font-size:17px;font-weight:400;color:var(--ink-mid);line-height:1.7;max-width:480px;margin:0 auto 40px}
+.hero-btn{display:inline-flex;align-items:center;gap:10px;background:var(--blue);color:white;font-family:'Inter',sans-serif;font-size:15px;font-weight:600;padding:16px 32px;border-radius:50px;border:none;cursor:pointer;transition:all 0.2s;box-shadow:0 4px 14px rgba(37,99,235,0.35)}
+.hero-btn:hover{background:var(--blue-dark);transform:translateY(-2px);box-shadow:0 8px 20px rgba(37,99,235,0.4)}
+.hero-stats{display:flex;gap:32px;justify-content:center;margin-top:48px;flex-wrap:wrap}
+.hero-stat-num{font-size:26px;font-weight:800;color:var(--ink);letter-spacing:-0.5px}
+.hero-stat-label{font-size:12px;color:var(--ink-light);font-weight:500;margin-top:2px}
+
+/* MAIN CARD */
+main{padding:0 24px 80px;max-width:700px;margin:0 auto}
+.planner-card{background:var(--white);border-radius:var(--radius);border:1px solid var(--border);box-shadow:var(--shadow-lg);overflow:hidden;margin-bottom:0}
+
+/* PROGRESS BAR */
+.progress-bar{height:4px;background:var(--border);position:relative}
+.progress-fill{height:4px;background:linear-gradient(90deg,var(--blue),#60A5FA);border-radius:2px;transition:width 0.4s cubic-bezier(0.4,0,0.2,1)}
+
+/* STEP HEADER */
+.step-header{padding:28px 32px 0}
+.step-meta{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.step-num{width:28px;height:28px;background:var(--blue);color:white;border-radius:50%;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center}
+.step-label{font-size:12px;font-weight:600;color:var(--ink-light);letter-spacing:0.06em;text-transform:uppercase}
+.step-title{font-size:22px;font-weight:700;color:var(--ink);letter-spacing:-0.3px;margin-bottom:6px}
+.step-desc{font-size:14px;color:var(--ink-mid);line-height:1.6}
+
+/* STEP BODY */
+.step-body{padding:24px 32px 32px}
+.step-panel{display:none}
+.step-panel.active{display:block;animation:fadeUp 0.3s ease}
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+
+/* FIELDS */
+.field-group{margin-bottom:16px}
+.field-label{font-size:12px;font-weight:600;color:var(--ink-mid);letter-spacing:0.04em;text-transform:uppercase;margin-bottom:7px;display:block}
+.field-select,.field-textarea,.field-input{width:100%;padding:12px 16px;background:var(--bg);border:1.5px solid var(--border);border-radius:var(--radius-sm);font-family:'Inter',sans-serif;font-size:14px;color:var(--ink);transition:all 0.2s;outline:none}
+.field-select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%2394A3B8' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;cursor:pointer;background-color:var(--bg)}
+.field-select:focus,.field-textarea:focus,.field-input:focus{border-color:var(--blue);background:white;box-shadow:0 0 0 3px rgba(37,99,235,0.08)}
+.field-select:disabled{opacity:0.4;cursor:not-allowed}
+.field-textarea{resize:none;min-height:90px;line-height:1.6}
+.field-textarea::placeholder,.field-input::placeholder{color:var(--ink-light)}
+.fields-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.field-hidden{display:none}
+
+/* CHIPS */
+.chips-wrap{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:4px}
+.chip{padding:8px 16px;border:1.5px solid var(--border);border-radius:50px;font-size:13px;font-weight:500;cursor:pointer;transition:all 0.18s;background:var(--bg);color:var(--ink-mid);user-select:none;white-space:nowrap}
+.chip:hover{border-color:var(--blue);color:var(--blue);background:var(--blue-light)}
+.chip.selected{background:var(--blue);border-color:var(--blue);color:white;box-shadow:0 2px 8px rgba(37,99,235,0.25)}
+
+/* BUTTONS */
+.btn-row{display:flex;gap:10px;align-items:center;margin-top:24px;flex-wrap:wrap}
+.btn-primary{background:var(--blue);color:white;border:none;padding:14px 28px;font-family:'Inter',sans-serif;font-size:14px;font-weight:600;cursor:pointer;border-radius:50px;transition:all 0.2s;box-shadow:0 4px 12px rgba(37,99,235,0.3);letter-spacing:-0.1px}
+.btn-primary:hover{background:var(--blue-dark);transform:translateY(-1px);box-shadow:0 6px 16px rgba(37,99,235,0.35)}
+.btn-secondary{background:var(--bg);color:var(--ink-mid);border:1.5px solid var(--border);padding:13px 22px;font-family:'Inter',sans-serif;font-size:14px;font-weight:500;cursor:pointer;border-radius:50px;transition:all 0.2s}
+.btn-secondary:hover{border-color:var(--blue);color:var(--blue);background:var(--blue-light)}
+.btn-back{background:none;border:none;font-family:'Inter',sans-serif;font-size:14px;color:var(--ink-light);cursor:pointer;padding:14px 4px;transition:color 0.2s;font-weight:500}
+.btn-back:hover{color:var(--ink)}
+.btn-ghost{background:none;border:1.5px solid var(--border);color:var(--ink-mid);padding:10px 18px;font-family:'Inter',sans-serif;font-size:13px;font-weight:500;cursor:pointer;border-radius:50px;transition:all 0.2s;display:flex;align-items:center;gap:6px}
+.btn-ghost:hover{border-color:var(--blue);color:var(--blue)}
+.btn-green{background:var(--green);color:white;border:none;padding:10px 18px;font-family:'Inter',sans-serif;font-size:13px;font-weight:600;cursor:pointer;border-radius:50px;transition:all 0.2s;display:flex;align-items:center;gap:6px}
+.btn-green:hover{opacity:0.9;transform:translateY(-1px)}
+.btn-share{background:linear-gradient(135deg,#7C3AED,#EC4899);color:white;border:none;padding:10px 18px;font-family:'Inter',sans-serif;font-size:13px;font-weight:600;cursor:pointer;border-radius:50px;transition:all 0.2s;display:flex;align-items:center;gap:6px}
+.btn-share:hover{opacity:0.9;transform:translateY(-1px);box-shadow:0 6px 16px rgba(124,58,237,0.35)}
 
 /* LOADING */
-.loading-state{text-align:center;padding:60px 0}
-.spinner{width:40px;height:40px;border:2px solid var(--sand-dark);border-top-color:var(--terra);border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 24px}
+.loading-state{text-align:center;padding:64px 32px}
+.spinner{width:44px;height:44px;border:3px solid var(--border);border-top-color:var(--blue);border-radius:50%;animation:spin 0.7s linear infinite;margin:0 auto 24px}
 @keyframes spin{to{transform:rotate(360deg)}}
-.loading-text{font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:300;margin-bottom:8px}
-.loading-sub{font-size:13px;color:rgba(26,20,16,0.45);font-weight:300}
+.loading-title{font-size:20px;font-weight:700;color:var(--ink);margin-bottom:8px;letter-spacing:-0.3px}
+.loading-sub{font-size:14px;color:var(--ink-mid)}
+.loading-steps{display:flex;flex-direction:column;gap:10px;margin-top:28px;text-align:left;max-width:260px;margin-left:auto;margin-right:auto}
+.loading-step{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--ink-light)}
+.loading-step.active{color:var(--blue);font-weight:500}
+.loading-step-dot{width:8px;height:8px;border-radius:50%;background:var(--border);flex-shrink:0}
+.loading-step.active .loading-step-dot{background:var(--blue);box-shadow:0 0 0 3px rgba(37,99,235,0.2)}
+.loading-step.done .loading-step-dot{background:var(--green)}
+.loading-step.done{color:var(--green)}
 
 /* RESULT */
-.result-plan{margin-top:8px}
-.plan-intro{font-family:'Cormorant Garamond',serif;font-size:17px;font-weight:300;line-height:1.7;color:var(--ink);margin-bottom:24px;padding:20px;background:rgba(196,96,42,0.05);border-radius:3px;border-left:3px solid var(--terra)}
-.plan-day{margin-bottom:20px;border-radius:3px;overflow:hidden;border:1px solid var(--sand-dark)}
-.plan-day-header{background:var(--terra);color:var(--white);padding:12px 20px;font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:400}
-.plan-day-body{background:var(--sand);padding:20px}
-.plan-section{margin-bottom:14px}
-.plan-section-title{font-size:11px;font-weight:500;letter-spacing:0.2em;text-transform:uppercase;color:var(--terra);margin-bottom:6px}
-.plan-section-text{font-size:14px;line-height:1.8;color:var(--ink);font-weight:300}
-.plan-tip{background:rgba(191,164,106,0.15);border-left:3px solid var(--gold);padding:10px 14px;border-radius:2px;font-size:13px;color:rgba(26,20,16,0.7);margin-top:10px;font-style:italic}
-.result-actions{display:flex;gap:10px;margin-top:24px;flex-wrap:wrap}
-.credits-badge{display:inline-flex;align-items:center;gap:8px;background:rgba(122,158,126,0.15);border:1px solid var(--sage);border-radius:20px;padding:8px 16px;font-size:12px;color:var(--sage);font-weight:500;margin-bottom:20px}
+.result-wrap{padding:28px 32px 32px}
+.result-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:24px;gap:16px;flex-wrap:wrap}
+.result-title{font-size:20px;font-weight:700;color:var(--ink);letter-spacing:-0.3px}
+.result-subtitle{font-size:13px;color:var(--ink-mid);margin-top:3px}
+.result-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:0}
+.plan-intro{font-size:15px;line-height:1.75;color:var(--ink-mid);margin-bottom:20px;padding:18px 20px;background:var(--blue-light);border-radius:var(--radius-sm);border-left:3px solid var(--blue)}
+.plan-day{margin-bottom:16px;border:1.5px solid var(--border);border-radius:var(--radius-sm);overflow:hidden;transition:box-shadow 0.2s}
+.plan-day:hover{box-shadow:var(--shadow)}
+.plan-day-header{background:var(--ink);color:white;padding:12px 18px;font-size:14px;font-weight:700;letter-spacing:-0.1px;display:flex;align-items:center;gap:10px}
+.plan-day-num{background:var(--blue);color:white;font-size:11px;font-weight:700;padding:2px 8px;border-radius:10px}
+.plan-day-body{background:white;padding:0}
+.plan-section{padding:14px 18px;border-bottom:1px solid var(--bg)}
+.plan-section:last-child{border-bottom:none}
+.plan-section-head{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.plan-section-icon{font-size:14px;width:22px;text-align:center}
+.plan-section-title{font-size:11px;font-weight:700;color:var(--ink-mid);letter-spacing:0.06em;text-transform:uppercase}
+.plan-section-text{font-size:14px;line-height:1.7;color:var(--ink);font-weight:400;padding-left:30px}
+.plan-tip{background:#FFFBEB;border-left:3px solid var(--orange);padding:12px 16px;font-size:13px;color:#92400E;line-height:1.6;font-style:italic;border-radius:0 var(--radius-xs) var(--radius-xs) 0}
+.plan-maps-link{display:inline-flex;align-items:center;gap:4px;font-size:12px;color:var(--blue);text-decoration:none;font-weight:500;margin-top:6px;padding-left:30px;transition:opacity 0.2s}
+.plan-maps-link:hover{opacity:0.7;text-decoration:underline}
+.plan-maps-icon{font-size:12px}
 
-/* PRICING SECTION */
-.pricing-section{max-width:720px;margin:0 auto 60px;display:grid;grid-template-columns:1fr 1fr;gap:16px}
-.pricing-card{background:var(--white);border-radius:4px;padding:40px 36px;box-shadow:0 2px 30px rgba(26,20,16,0.06);position:relative;overflow:hidden;transition:transform 0.2s}
-.pricing-card:hover{transform:translateY(-4px)}
-.pricing-card.featured::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--terra),var(--gold))}
-.pricing-badge{font-size:10px;font-weight:500;letter-spacing:0.2em;text-transform:uppercase;color:var(--terra);background:rgba(196,96,42,0.1);display:inline-block;padding:4px 10px;border-radius:20px;margin-bottom:20px}
-.pricing-name{font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:400;margin-bottom:8px}
-.pricing-price{font-family:'Cormorant Garamond',serif;font-size:52px;font-weight:300;line-height:1;margin-bottom:4px}
-.pricing-price sup{font-size:18px;vertical-align:top;margin-top:12px}
-.pricing-period{font-size:13px;color:rgba(26,20,16,0.45);margin-bottom:28px;font-weight:300}
-.pricing-features{list-style:none;margin-bottom:32px}
-.pricing-features li{font-size:13px;color:rgba(26,20,16,0.7);padding:7px 0;border-bottom:1px solid var(--sand-dark);display:flex;align-items:center;gap:10px;font-weight:300}
-.pricing-features li::before{content:'✦';color:var(--terra);font-size:8px;flex-shrink:0}
-
-/* MODAL */
-.modal-overlay{display:none;position:fixed;inset:0;background:rgba(26,20,16,0.6);z-index:500;align-items:center;justify-content:center;padding:24px}
-.modal-overlay.open{display:flex}
-.modal-box{background:var(--white);border-radius:4px;max-width:680px;width:100%;max-height:85vh;overflow-y:auto;position:relative}
-.modal-header{padding:32px 40px 20px;border-bottom:1px solid var(--sand-dark);position:sticky;top:0;background:var(--white);z-index:1;display:flex;justify-content:space-between;align-items:center}
-.modal-title{font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:400}
-.modal-close{background:none;border:none;font-size:22px;cursor:pointer;color:rgba(26,20,16,0.4);line-height:1;padding:4px}
-.modal-close:hover{color:var(--ink)}
-.modal-body{padding:32px 40px 40px;font-size:14px;line-height:1.85;font-weight:300;color:var(--ink)}
-.modal-body h2{font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:400;margin:28px 0 10px;color:var(--terra)}
-.modal-body h2:first-child{margin-top:0}
-.modal-body p{margin-bottom:12px}
-.modal-body ul{padding-left:20px;margin-bottom:12px}
-.modal-body ul li{margin-bottom:6px}
+/* PAYMENT STEP */
+.payment-single{background:white;border:2px solid var(--blue);border-radius:var(--radius-sm);padding:24px;margin-bottom:20px;position:relative;overflow:hidden}
+.payment-single::before{content:'✦ Most popular';position:absolute;top:12px;right:14px;font-size:11px;font-weight:600;color:var(--blue);background:var(--blue-light);padding:3px 10px;border-radius:20px}
+.payment-plan-name{font-size:13px;font-weight:600;color:var(--ink-mid);letter-spacing:0.04em;text-transform:uppercase;margin-bottom:6px}
+.payment-price{font-size:48px;font-weight:800;color:var(--ink);letter-spacing:-2px;line-height:1}
+.payment-price sup{font-size:22px;vertical-align:top;margin-top:10px;font-weight:700}
+.payment-price-desc{font-size:13px;color:var(--ink-mid);margin-top:6px;margin-bottom:16px}
+.payment-features{list-style:none;display:flex;flex-direction:column;gap:8px;margin-bottom:20px}
+.payment-features li{display:flex;align-items:center;gap:10px;font-size:14px;color:var(--ink)}
+.payment-features li::before{content:'✓';color:var(--green);font-weight:700;font-size:14px;flex-shrink:0}
+.payment-divider{height:1px;background:var(--border);margin:16px 0}
+.payment-note{font-size:12px;color:var(--ink-light);display:flex;align-items:center;gap:6px;margin-top:12px}
 
 /* FOOTER */
-footer{text-align:center;padding:32px 24px 40px;border-top:1px solid var(--sand-dark);margin-top:40px}
-.footer-links{display:flex;gap:24px;justify-content:center;margin-bottom:16px;flex-wrap:wrap}
-.footer-link{font-size:12px;color:rgba(26,20,16,0.5);cursor:pointer;letter-spacing:0.05em;transition:color 0.2s;background:none;border:none;font-family:'DM Sans',sans-serif}
-.footer-link:hover{color:var(--terra)}
-.footer-copy{font-size:12px;color:rgba(26,20,16,0.3);letter-spacing:0.05em}
-.bg-deco{position:fixed;top:-200px;right:-200px;width:600px;height:600px;border-radius:50%;background:radial-gradient(circle,rgba(196,96,42,0.06) 0%,transparent 70%);pointer-events:none;z-index:0}
-.bg-deco2{position:fixed;bottom:-200px;left:-200px;width:500px;height:500px;border-radius:50%;background:radial-gradient(circle,rgba(122,158,126,0.07) 0%,transparent 70%);pointer-events:none;z-index:0}
-main{position:relative;z-index:1;padding:0 24px 60px}
-.reveal{opacity:0;transform:translateY(20px);transition:opacity 0.6s ease,transform 0.6s ease}
-.reveal.visible{opacity:1;transform:translateY(0)}
-@media(max-width:640px){.planner-card{padding:36px 24px}.fields-grid{grid-template-columns:1fr}.pricing-section{grid-template-columns:1fr}.payment-options{grid-template-columns:1fr}header{padding:48px 24px 0}.modal-header,.modal-body{padding-left:24px;padding-right:24px}}
+footer{text-align:center;padding:32px 24px;border-top:1px solid var(--border);margin-top:60px}
+.footer-links{display:flex;gap:20px;justify-content:center;margin-bottom:12px;flex-wrap:wrap}
+.footer-link{font-size:13px;color:var(--ink-light);cursor:pointer;transition:color 0.2s;background:none;border:none;font-family:'Inter',sans-serif;font-weight:500}
+.footer-link:hover{color:var(--blue)}
+.footer-copy{font-size:12px;color:var(--ink-light)}
+
+/* MODAL */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(15,23,42,0.5);z-index:500;align-items:center;justify-content:center;padding:24px;backdrop-filter:blur(4px)}
+.modal-overlay.open{display:flex}
+.modal-box{background:white;border-radius:var(--radius);max-width:640px;width:100%;max-height:85vh;overflow-y:auto;box-shadow:var(--shadow-lg)}
+.modal-header{padding:24px 28px 18px;border-bottom:1px solid var(--border);position:sticky;top:0;background:white;z-index:1;display:flex;justify-content:space-between;align-items:center}
+.modal-title{font-size:20px;font-weight:700;color:var(--ink);letter-spacing:-0.3px}
+.modal-close{background:var(--bg);border:none;width:32px;height:32px;border-radius:50%;font-size:16px;cursor:pointer;color:var(--ink-mid);display:flex;align-items:center;justify-content:center;transition:background 0.2s}
+.modal-close:hover{background:var(--border)}
+.modal-body{padding:24px 28px 32px;font-size:14px;line-height:1.8;color:var(--ink-mid)}
+.modal-body h2{font-size:16px;font-weight:700;color:var(--ink);margin:24px 0 8px;letter-spacing:-0.2px}
+.modal-body h2:first-child{margin-top:0}
+.modal-body p{margin-bottom:10px}
+.modal-body ul{padding-left:18px;margin-bottom:10px}
+.modal-body ul li{margin-bottom:5px}
+
+@media(max-width:600px){
+  nav{padding:0 16px}
+  .hero{padding:90px 16px 60px}
+  .step-header{padding:20px 20px 0}
+  .step-body{padding:18px 20px 24px}
+  .fields-grid{grid-template-columns:1fr}
+  .result-wrap{padding:20px}
+  .result-header{flex-direction:column}
+  .hero-stats{gap:20px}
+}
 </style>
 </head>
 <body>
-<div class="bg-deco"></div><div class="bg-deco2"></div>
 
-<div class="lang-toggle">
-  <button class="lang-btn active" onclick="setLang('en')">EN</button>
-  <button class="lang-btn" onclick="setLang('de')">DE</button>
-</div>
+<nav>
+  <div class="nav-logo">GAG<span>globetrotter</span></div>
+  <div class="lang-toggle">
+    <button class="lang-btn active" onclick="setLang('en')">EN</button>
+    <button class="lang-btn" onclick="setLang('de')">DE</button>
+  </div>
+</nav>
 
-<header>
-  <div class="logo">GAGglobetrotter</div>
-  <h1 class="hero-title" id="hero-title">Your journey,<br><em>perfectly planned.</em></h1>
-  <p class="hero-sub" id="hero-sub">Answer a few questions – our AI creates your personal travel plan in seconds, ready to use immediately.</p>
-  <div class="deco-line"></div>
-</header>
+<section class="hero">
+  <div class="hero-eyebrow">✈️ <span id="eyebrow-text">AI-Powered Travel Planning</span></div>
+  <h1 class="hero-title" id="hero-title">Plan your dream trip<br>in <span class="accent">60 seconds</span></h1>
+  <p class="hero-sub" id="hero-sub">Answer a few questions. Our AI builds you a detailed, day-by-day travel plan — complete with restaurants, hotels, and Google Maps links.</p>
+  <button class="hero-btn" onclick="document.getElementById('planner').scrollIntoView({behavior:'smooth'})">
+    <span id="hero-btn-text">Start Planning →</span>
+  </button>
+  <div class="hero-stats">
+    <div><div class="hero-stat-num">60s</div><div class="hero-stat-label" id="stat1">Plan generated</div></div>
+    <div><div class="hero-stat-num">$7</div><div class="hero-stat-label" id="stat2">One-time price</div></div>
+    <div><div class="hero-stat-num">50+</div><div class="hero-stat-label" id="stat3">Destinations</div></div>
+  </div>
+</section>
 
-<main>
-  <div class="planner-card reveal" id="planner-card">
-    <div class="card-label" id="card-label">Travel Planner</div>
-    <div class="steps-row">
-      <div class="step-item"><div class="step-dot active" id="dot1">1</div><div class="step-name" id="sname1">Destination</div></div>
-      <div class="step-item"><div class="step-dot" id="dot2">2</div><div class="step-name" id="sname2">Style</div></div>
-      <div class="step-item"><div class="step-dot" id="dot3">3</div><div class="step-name" id="sname3">Details</div></div>
-      <div class="step-item"><div class="step-dot" id="dot4">4</div><div class="step-name" id="sname4">Payment</div></div>
-      <div class="step-item"><div class="step-dot" id="dot5">5</div><div class="step-name" id="sname5">Plan</div></div>
-    </div>
+<main id="planner">
+  <div class="planner-card">
+    <div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width:20%"></div></div>
 
     <!-- STEP 1 -->
     <div class="step-panel active" id="step1">
-      <div class="step-title" id="s1-title">Where do you want to go?</div>
-      <div class="step-desc" id="s1-desc">Choose your destination and travel duration.</div>
-      <div class="fields-grid">
-        <div class="field-group"><label class="field-label" id="l-region">Region</label>
-          <select class="field-select" id="sel-region"><option value="">— Select —</option><option>🌍 Europe</option><option>🌏 Asia</option><option>🌎 North America</option><option>🌎 South America</option><option>🌍 Africa</option><option>🌏 Oceania</option><option>🕌 Middle East</option></select></div>
-        <div class="field-group"><label class="field-label" id="l-country">Country / City (optional)</label>
-          <select class="field-select" id="sel-country"><option value="">— Select —</option><option>✨ Surprise me</option><option>Japan</option><option>Italy</option><option>Portugal</option><option>Spain</option><option>Thailand</option><option>Bali</option><option>Morocco</option><option>Greece</option><option>USA</option><option>Iceland</option><option>New Zealand</option></select></div>
-        <div class="field-group"><label class="field-label" id="l-duration">Duration</label>
-          <select class="field-select" id="sel-duration"><option value="">— Select —</option><option>3–4 days (Short trip)</option><option>5–7 days (1 week)</option><option>8–14 days (2 weeks)</option><option>15–21 days (3 weeks)</option><option>More than 3 weeks</option></select></div>
-        <div class="field-group"><label class="field-label" id="l-people">Travelers</label>
-          <select class="field-select" id="sel-people"><option value="">— Select —</option><option>Solo</option><option>Couple</option><option>Family with children</option><option>Group (3–6 people)</option><option>Large group (7+)</option></select></div>
+      <div class="step-header">
+        <div class="step-meta"><div class="step-num">1</div><span class="step-label" id="s1-label">Destination</span></div>
+        <div class="step-title" id="s1-title">Where are you headed?</div>
+        <div class="step-desc" id="s1-desc">Choose your region, country, and city — or let us surprise you.</div>
       </div>
-      <div class="btn-row"><button class="btn-primary" onclick="goStep(2)" id="btn-s1">Next →</button></div>
+      <div class="step-body">
+        <div class="field-group">
+          <label class="field-label" id="l-region">Region</label>
+          <select class="field-select" id="sel-region" onchange="onRegionChange()">
+            <option value="">— Select a region —</option>
+          </select>
+        </div>
+        <div class="field-group field-hidden" id="fg-country">
+          <label class="field-label" id="l-country">Country <span style="color:var(--ink-light);font-weight:400">(optional)</span></label>
+          <select class="field-select" id="sel-country" onchange="onCountryChange()">
+            <option value="">— Select a country —</option>
+          </select>
+        </div>
+        <div class="field-group field-hidden" id="fg-city">
+          <label class="field-label" id="l-city">City <span style="color:var(--ink-light);font-weight:400">(optional)</span></label>
+          <select class="field-select" id="sel-city">
+            <option value="">— Select a city —</option>
+          </select>
+        </div>
+        <div class="fields-grid" style="margin-top:4px">
+          <div class="field-group">
+            <label class="field-label" id="l-duration">Duration</label>
+            <select class="field-select" id="sel-duration">
+              <option value="">— Select —</option>
+            </select>
+          </div>
+          <div class="field-group">
+            <label class="field-label" id="l-people">Travelers</label>
+            <select class="field-select" id="sel-people">
+              <option value="">— Select —</option>
+            </select>
+          </div>
+        </div>
+        <div class="btn-row">
+          <button class="btn-primary" onclick="goStep(2)" id="btn-s1">Next →</button>
+        </div>
+      </div>
     </div>
 
     <!-- STEP 2 -->
     <div class="step-panel" id="step2">
-      <div class="step-title" id="s2-title">What is your travel style?</div>
-      <div class="step-desc" id="s2-desc">Select everything that applies to you.</div>
-      <label class="field-label" id="l-style">Travel Style (multi-select)</label>
-      <div class="chips-row" id="chips-style">
-        <div class="chip" onclick="toggleChip(this)">🏖️ Beach & Sea</div>
-        <div class="chip" onclick="toggleChip(this)">🏛️ Culture & History</div>
-        <div class="chip" onclick="toggleChip(this)">🍜 Food & Cuisine</div>
-        <div class="chip" onclick="toggleChip(this)">🥾 Hiking & Nature</div>
-        <div class="chip" onclick="toggleChip(this)">🎭 Nightlife & Party</div>
-        <div class="chip" onclick="toggleChip(this)">🧘 Wellness & Spa</div>
-        <div class="chip" onclick="toggleChip(this)">📸 Photography</div>
-        <div class="chip" onclick="toggleChip(this)">🛍️ Shopping</div>
-        <div class="chip" onclick="toggleChip(this)">🏔️ Adventure & Sports</div>
-        <div class="chip" onclick="toggleChip(this)">🤝 Local Culture</div>
+      <div class="step-header">
+        <div class="step-meta"><div class="step-num">2</div><span class="step-label" id="s2-label">Travel Style</span></div>
+        <div class="step-title" id="s2-title">What kind of traveler are you?</div>
+        <div class="step-desc" id="s2-desc">Pick your vibe — choose as many as you like.</div>
       </div>
-      <div class="field-group" style="margin-top:16px"><label class="field-label" id="l-budget">Budget (per person / day)</label>
-        <select class="field-select" id="sel-budget"><option value="">— Select —</option><option>🎒 Backpacker (under $50/day)</option><option>👜 Mid-range ($50–150/day)</option><option>✈️ Comfort ($150–300/day)</option><option>💎 Luxury (over $300/day)</option></select></div>
-      <div class="btn-row">
-        <button class="btn-back" onclick="goStep(1)" id="btn-back2">← Back</button>
-        <button class="btn-primary" onclick="goStep(3)" id="btn-s2">Next →</button>
+      <div class="step-body">
+        <div class="field-group">
+          <label class="field-label" id="l-style">Your interests</label>
+          <div class="chips-wrap" id="chips-style"></div>
+        </div>
+        <div class="field-group">
+          <label class="field-label" id="l-budget">Daily budget per person</label>
+          <select class="field-select" id="sel-budget"><option value="">— Select —</option></select>
+        </div>
+        <div class="btn-row">
+          <button class="btn-back" onclick="goStep(1)" id="btn-back2">← Back</button>
+          <button class="btn-primary" onclick="goStep(3)" id="btn-s2">Next →</button>
+        </div>
       </div>
     </div>
 
     <!-- STEP 3 -->
     <div class="step-panel" id="step3">
-      <div class="step-title" id="s3-title">Final Details</div>
-      <div class="step-desc" id="s3-desc">Almost done! A few more preferences.</div>
-      <div class="field-group"><label class="field-label" id="l-accom">Accommodation</label>
-        <select class="field-select" id="sel-accom"><option value="">— Select —</option><option>Hostel / Backpacker</option><option>Budget hotels (2–3 stars)</option><option>Mid-range hotels (3–4 stars)</option><option>Luxury hotels (4–5 stars)</option><option>Boutique hotels & B&B</option><option>Vacation rentals / Apartments</option><option>Camping & Glamping</option></select></div>
-      <div class="field-group"><label class="field-label" id="l-transport">Local Transport</label>
-        <select class="field-select" id="sel-transport"><option value="">— Select —</option><option>🚇 Public transport</option><option>🚗 Rental car</option><option>🛵 Scooter / Motorbike</option><option>🚲 Bicycle</option><option>🚶 Walking</option><option>🔀 Mix of everything</option></select></div>
-      <div class="field-group"><label class="field-label" id="l-wishes">Special Requests (optional)</label>
-        <textarea class="field-textarea" id="txt-wishes" placeholder="e.g. vegetarian restaurants, wheelchair accessible, certain sights to avoid..."></textarea></div>
-      <div class="btn-row">
-        <button class="btn-back" onclick="goStep(2)" id="btn-back3">← Back</button>
-        <button class="btn-primary" onclick="goStep(4)" id="btn-s3">Next →</button>
+      <div class="step-header">
+        <div class="step-meta"><div class="step-num">3</div><span class="step-label" id="s3-label">Details</span></div>
+        <div class="step-title" id="s3-title">Almost there!</div>
+        <div class="step-desc" id="s3-desc">Just a few more details to make your plan perfect.</div>
+      </div>
+      <div class="step-body">
+        <div class="fields-grid">
+          <div class="field-group">
+            <label class="field-label" id="l-accom">Accommodation</label>
+            <select class="field-select" id="sel-accom"><option value="">— Select —</option></select>
+          </div>
+          <div class="field-group">
+            <label class="field-label" id="l-transport">Getting around</label>
+            <select class="field-select" id="sel-transport"><option value="">— Select —</option></select>
+          </div>
+        </div>
+        <div class="field-group">
+          <label class="field-label" id="l-wishes">Anything else? <span style="color:var(--ink-light);font-weight:400">(optional)</span></label>
+          <textarea class="field-textarea" id="txt-wishes"></textarea>
+        </div>
+        <div class="btn-row">
+          <button class="btn-back" onclick="goStep(2)" id="btn-back3">← Back</button>
+          <button class="btn-primary" onclick="goStep(4)" id="btn-s3">Next →</button>
+        </div>
       </div>
     </div>
 
     <!-- STEP 4: PAYMENT -->
     <div class="step-panel" id="step4">
-      <div class="step-title" id="s4-title">Choose your plan</div>
-      <div class="step-desc" id="s4-desc">Pay once – your travel plan will be created immediately after payment.</div>
-
-      <div class="payment-options">
-        <div class="payment-option" id="opt-single" onclick="selectPlan('single')">
-          <div class="payment-option-name" id="opt-single-name">Single Plan</div>
-          <div class="payment-option-price"><sup>$</sup>7</div>
-          <div class="payment-option-desc" id="opt-single-desc">1 complete travel plan<br>PDF & Excel export included<br>Valid forever</div>
-        </div>
-        <div class="payment-option" id="opt-pack" onclick="selectPlan('pack')">
-          <div class="payment-option-name" id="opt-pack-name">5-Plan Pack</div>
-          <div class="payment-option-price"><sup>$</sup>21</div>
-          <div class="payment-option-desc" id="opt-pack-desc">5 complete travel plans<br>PDF & Excel export included<br>Valid for 180 days<br><strong style="color:var(--terra)">Save $14!</strong></div>
-        </div>
+      <div class="step-header">
+        <div class="step-meta"><div class="step-num">4</div><span class="step-label" id="s4-label">Payment</span></div>
+        <div class="step-title" id="s4-title">One small step for your wallet…</div>
+        <div class="step-desc" id="s4-desc">…one giant leap for your next adventure. Your plan is generated instantly after payment.</div>
       </div>
-
-      <p class="payment-note" id="pay-note">🔒 Secure payment via Stripe. Your plan is generated immediately after payment.</p>
-      <p class="payment-secure" id="pay-secure">SSL encrypted · No data stored · Cancel anytime</p>
-
-      <div class="btn-row" style="margin-top:28px">
-        <button class="btn-back" onclick="goStep(3)" id="btn-back4">← Back</button>
-        <button class="btn-primary" onclick="proceedToPayment()" id="btn-pay">💳 Pay & Create Plan</button>
+      <div class="step-body">
+        <div class="payment-single">
+          <div class="payment-plan-name" id="pay-plan-name">Complete Travel Plan</div>
+          <div class="payment-price"><sup>$</sup>7</div>
+          <div class="payment-price-desc" id="pay-price-desc">One-time payment · No subscription · Yours forever</div>
+          <ul class="payment-features" id="pay-features">
+            <li>Full day-by-day itinerary</li>
+            <li>Restaurant & hotel recommendations</li>
+            <li>Google Maps links for every spot</li>
+            <li>PDF & Excel export</li>
+            <li>Share with your travel buddy</li>
+          </ul>
+          <button class="btn-primary" style="width:100%;justify-content:center;border-radius:10px;padding:16px" onclick="proceedToPayment()" id="btn-pay">💳 Pay $7 & Create My Plan</button>
+          <div class="payment-note">🔒 <span id="pay-note">Secure payment via Stripe · SSL encrypted · Instant delivery</span></div>
+        </div>
+        <div class="btn-row" style="margin-top:0">
+          <button class="btn-back" onclick="goStep(3)" id="btn-back4">← Back</button>
+        </div>
       </div>
     </div>
 
@@ -248,51 +338,32 @@ main{position:relative;z-index:1;padding:0 24px 60px}
     <div class="step-panel" id="step5">
       <div id="loading-view" class="loading-state">
         <div class="spinner"></div>
-        <div class="loading-text" id="loading-text">Creating your plan …</div>
-        <div class="loading-sub" id="loading-sub">Our AI is thinking and planning your adventure</div>
-      </div>
-      <div id="result-view" style="display:none">
-        <div class="step-title" id="s5-title">Your Travel Plan ✦</div>
-        <div class="step-desc" id="s5-desc">Here is your personal travel plan.</div>
-        <div class="result-plan" id="result-plan"></div>
-        <div class="result-actions">
-          <button class="btn-outline" onclick="exportPDF()" id="btn-pdf">⬇ PDF</button>
-          <button class="btn-sage" onclick="exportExcel()" id="btn-excel">⬇ Excel</button>
-          <button class="btn-back" onclick="goStep(1);resetAll()" id="btn-new">↩ New Plan</button>
+        <div class="loading-title" id="loading-title">Building your perfect trip…</div>
+        <div class="loading-sub" id="loading-sub">This takes about 10–15 seconds</div>
+        <div class="loading-steps">
+          <div class="loading-step active" id="ls1"><div class="loading-step-dot"></div><span id="ls1-text">Analyzing your preferences</span></div>
+          <div class="loading-step" id="ls2"><div class="loading-step-dot"></div><span id="ls2-text">Crafting your itinerary</span></div>
+          <div class="loading-step" id="ls3"><div class="loading-step-dot"></div><span id="ls3-text">Adding local tips & maps</span></div>
+          <div class="loading-step" id="ls4"><div class="loading-step-dot"></div><span id="ls4-text">Finalizing your plan</span></div>
         </div>
       </div>
-    </div>
-  </div>
-
-  <!-- PRICING OVERVIEW -->
-  <div class="pricing-section reveal">
-    <div class="pricing-card">
-      <div class="pricing-badge" id="badge-single">One-time</div>
-      <div class="pricing-name" id="price-name1">Single Plan</div>
-      <div class="pricing-price"><sup>$</sup>7</div>
-      <div class="pricing-period" id="price-period1">one-time payment</div>
-      <ul class="pricing-features" id="features1">
-        <li>1 complete travel plan</li>
-        <li>Day-by-day itinerary</li>
-        <li>Restaurant & hotel tips</li>
-        <li>Transport guidance</li>
-        <li>PDF & Excel export</li>
-      </ul>
-      <button class="btn-primary" onclick="goStep(4);selectPlan('single')" style="width:100%" id="prc-btn1">Get Single Plan</button>
-    </div>
-    <div class="pricing-card featured">
-      <div class="pricing-badge" id="badge-pack">Best Value ✦</div>
-      <div class="pricing-name" id="price-name2">5-Plan Pack</div>
-      <div class="pricing-price"><sup>$</sup>21</div>
-      <div class="pricing-period" id="price-period2">one-time · valid 180 days</div>
-      <ul class="pricing-features" id="features2">
-        <li>5 complete travel plans</li>
-        <li>Day-by-day itineraries</li>
-        <li>Restaurant & hotel tips</li>
-        <li>Transport guidance</li>
-        <li>PDF & Excel export</li>
-      </ul>
-      <button class="btn-primary" onclick="goStep(4);selectPlan('pack')" style="width:100%" id="prc-btn2">Get 5-Plan Pack</button>
+      <div id="result-view" style="display:none">
+        <div class="result-wrap">
+          <div class="result-header">
+            <div>
+              <div class="result-title" id="s5-title">Your Travel Plan ✈️</div>
+              <div class="result-subtitle" id="s5-sub">Ready to go. Download, share, or explore below.</div>
+            </div>
+          </div>
+          <div id="result-plan"></div>
+          <div class="result-actions" style="margin-top:20px">
+            <button class="btn-ghost" onclick="exportPDF()" id="btn-pdf">⬇ PDF</button>
+            <button class="btn-ghost" onclick="exportExcel()" id="btn-excel">⬇ Excel</button>
+            <button class="btn-share" onclick="shareWithBuddy()" id="btn-share">✈️ Send to Travel Buddy</button>
+            <button class="btn-back" onclick="goStep(1);resetAll()" id="btn-new" style="margin-left:auto">↩ New Plan</button>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </main>
@@ -300,268 +371,408 @@ main{position:relative;z-index:1;padding:0 24px 60px}
 <footer>
   <div class="footer-links">
     <button class="footer-link" onclick="openModal('impressum')" id="fl-imp">Imprint</button>
-    <button class="footer-link" onclick="openModal('agb')" id="fl-agb">Terms & Conditions</button>
-    <button class="footer-link" onclick="openModal('datenschutz')" id="fl-priv">Privacy Policy</button>
+    <button class="footer-link" onclick="openModal('agb')" id="fl-agb">Terms</button>
+    <button class="footer-link" onclick="openModal('datenschutz')" id="fl-priv">Privacy</button>
   </div>
-  <div class="footer-copy">© 2025 GAGglobetrotter · <span id="footer-text">Powered by AI – for real travelers</span></div>
+  <div class="footer-copy">© 2025 GAGglobetrotter · <span id="footer-text">Powered by AI</span></div>
 </footer>
 
-<!-- IMPRINT -->
+<!-- MODALS -->
 <div class="modal-overlay" id="modal-impressum">
   <div class="modal-box">
     <div class="modal-header"><div class="modal-title" id="imp-title">Imprint</div><button class="modal-close" onclick="closeModal('impressum')">✕</button></div>
     <div class="modal-body">
-      <h2 id="imp-h1">Provider</h2>
-      <p>Thierry Hirschi<br>Zwickystrasse<br>8304 Wallisellen<br>Switzerland</p>
-      <p>Email: aieasytravel@proton.me</p>
-      <h2 id="imp-h2">Disclaimer</h2>
-      <p id="imp-p1">The contents of this website have been created with the greatest care. However, we cannot guarantee the accuracy, completeness or timeliness of the content. The generated travel plans are recommendations and do not replace personal travel advice. Prices, opening hours and availability are subject to change at any time.</p>
-      <h2 id="imp-h3">Copyright</h2>
-      <p id="imp-p2">The content and works created by the site operator on this website are subject to Swiss copyright law. Reproduction or distribution requires written consent.</p>
-      <h2 id="imp-h4">Dispute Resolution</h2>
-      <p id="imp-p3">Swiss law applies to disputes arising from the contractual relationship. Place of jurisdiction is Zurich.</p>
+      <h2>Provider</h2><p>[Your First Name Last Name]<br>[Street]<br>[ZIP City]<br>Switzerland<br>Email: [your@email.com]</p>
+      <h2>Disclaimer</h2><p>Generated travel plans are recommendations only and do not replace professional travel advice. Prices and availability may change.</p>
+      <h2>Copyright</h2><p>Content is subject to Swiss copyright law. Reproduction requires written consent.</p>
+      <h2>Jurisdiction</h2><p>Swiss law applies. Place of jurisdiction: [your canton].</p>
     </div>
   </div>
 </div>
-
-<!-- TERMS -->
 <div class="modal-overlay" id="modal-agb">
   <div class="modal-box">
     <div class="modal-header"><div class="modal-title" id="agb-title">Terms & Conditions</div><button class="modal-close" onclick="closeModal('agb')">✕</button></div>
     <div class="modal-body">
-      <h2>1. Scope</h2>
-      <p>These Terms & Conditions apply to all services of GAGglobetrotter ([Your Name], Switzerland) to customers who purchase travel plans via gagglobetrotter.com.</p>
-      <h2>2. Service Description</h2>
-      <p>GAGglobetrotter offers AI-generated travel plans as a digital service. Plans are recommendations and do not replace professional travel advice. No guarantee is given for the accuracy or timeliness of recommended places and prices.</p>
-      <h2>3. Contract Formation</h2>
-      <p>The contract is concluded upon completion of the payment process. By paying, the customer confirms having read and accepted these Terms.</p>
-      <h2>4. Prices & Payment</h2>
-      <p>All prices in US Dollars (USD). Payment via Stripe.</p>
-      <ul><li>Single Plan: $7.00 (one-time payment, 1 travel plan)</li><li>5-Plan Pack: $21.00 (one-time payment, 5 travel plans, valid 180 days from purchase)</li></ul>
-      <h2>5. Refund Policy</h2>
-      <p>As these are immediately usable digital goods delivered upon purchase, refunds are generally excluded. By completing the purchase, the customer expressly agrees to waive their right of withdrawal once the digital content has been provided.</p>
-      <h2>6. Validity of 5-Plan Pack</h2>
-      <p>The 5-Plan Pack is valid for 180 days from the date of purchase. Unused plans expire after this period without entitlement to refund.</p>
-      <h2>7. Limitation of Liability</h2>
-      <p>GAGglobetrotter is not liable for damages arising from the use of generated travel plans. The customer is responsible for verifying information before travel.</p>
-      <h2>8. Applicable Law</h2>
-      <p>Swiss law applies. Place of jurisdiction is [your canton], Switzerland.</p>
+      <h2>1. Scope</h2><p>These Terms apply to all services of GAGglobetrotter ([Your Name], Switzerland).</p>
+      <h2>2. Service</h2><p>AI-generated travel plans as digital goods. Plans are recommendations, not professional advice.</p>
+      <h2>3. Contract</h2><p>Contract is concluded upon payment completion.</p>
+      <h2>4. Pricing</h2><p>Single Plan: $7.00 USD (one-time). Payment via Stripe.</p>
+      <h2>5. Refunds</h2><p>No refunds on digital goods delivered instantly. By purchasing, you waive your right of withdrawal.</p>
+      <h2>6. Liability</h2><p>GAGglobetrotter is not liable for damages arising from use of generated plans.</p>
+      <h2>7. Law</h2><p>Swiss law. Jurisdiction: [your canton].</p>
     </div>
   </div>
 </div>
-
-<!-- PRIVACY -->
 <div class="modal-overlay" id="modal-datenschutz">
   <div class="modal-box">
     <div class="modal-header"><div class="modal-title" id="priv-title">Privacy Policy</div><button class="modal-close" onclick="closeModal('datenschutz')">✕</button></div>
     <div class="modal-body">
-      <h2>1. Responsible Party</h2>
-      <p>[Your First Name Last Name], [Address], Email: [your@email.com]</p>
-      <p>This privacy policy applies in accordance with the Swiss Data Protection Act (revDSG, in force since September 1, 2023).</p>
-      <h2>2. Data Collected</h2>
-      <ul><li>Travel preferences – to create your travel plan</li><li>Payment data – processed exclusively by Stripe</li><li>Email address – upon purchase, for invoicing</li><li>Technical data (IP, browser) – via Vercel hosting</li></ul>
-      <h2>3. Purpose of Processing</h2>
-      <ul><li>Creating personalized travel plans</li><li>Payment processing</li><li>Operation and improvement of the service</li></ul>
-      <h2>4. Third-Party Providers</h2>
-      <p><strong>Anthropic:</strong> Travel preferences are transmitted to the Claude API to generate your plan (anthropic.com/privacy).</p>
-      <p><strong>Stripe:</strong> Payment processing per stripe.com/privacy.</p>
-      <p><strong>Vercel:</strong> Hosting per vercel.com/legal/privacy-policy.</p>
-      <h2>5. Data Retention</h2>
-      <p>Travel preferences and generated plans are not stored permanently. Payment data is retained by Stripe.</p>
-      <h2>6. Your Rights (revDSG)</h2>
-      <p>Access, correction, deletion and data portability. Requests to: [your@email.com]</p>
-      <h2>7. Cookies</h2>
-      <p>This website does not use tracking cookies.</p>
-      <p><em>Last updated: January 2025</em></p>
+      <h2>Responsible</h2><p>[Your Name], [Address]. Email: [your@email.com]<br>Per Swiss revDSG (Sept 2023).</p>
+      <h2>Data Collected</h2><ul><li>Travel preferences (for plan generation)</li><li>Payment data (Stripe only)</li><li>Email (invoicing)</li><li>Technical data (Vercel hosting)</li></ul>
+      <h2>Third Parties</h2><p><strong>Anthropic:</strong> Claude AI (anthropic.com/privacy). <strong>Stripe:</strong> Payments (stripe.com/privacy). <strong>Vercel:</strong> Hosting (vercel.com/legal/privacy-policy).</p>
+      <h2>Retention</h2><p>Preferences and plans not stored permanently.</p>
+      <h2>Your Rights</h2><p>Access, correction, deletion. Contact: [your@email.com]</p>
+      <h2>Cookies</h2><p>No tracking cookies used.</p>
+      <p><em>Updated: January 2025</em></p>
     </div>
   </div>
 </div>
 
 <script>
+/* ═══════════════════════════════════════════════
+   DATA
+═══════════════════════════════════════════════ */
+const REGIONS = {
+  en: [
+    {v:'europe',l:'🌍 Europe'},
+    {v:'asia',l:'🌏 Asia'},
+    {v:'north-america',l:'🌎 North America'},
+    {v:'south-america',l:'🌎 South America'},
+    {v:'africa',l:'🌍 Africa'},
+    {v:'middle-east',l:'🕌 Middle East'},
+    {v:'oceania',l:'🦘 Oceania'},
+    {v:'caribbean',l:'🏝️ Caribbean'},
+  ],
+  de: [
+    {v:'europe',l:'🌍 Europa'},
+    {v:'asia',l:'🌏 Asien'},
+    {v:'north-america',l:'🌎 Nordamerika'},
+    {v:'south-america',l:'🌎 Südamerika'},
+    {v:'africa',l:'🌍 Afrika'},
+    {v:'middle-east',l:'🕌 Mittlerer Osten'},
+    {v:'oceania',l:'🦘 Ozeanien'},
+    {v:'caribbean',l:'🏝️ Karibik'},
+  ]
+};
+
+const COUNTRIES = {
+  europe:{en:['🇮🇹 Italy','🇵🇹 Portugal','🇪🇸 Spain','🇬🇷 Greece','🇫🇷 France','🇩🇪 Germany','🇨🇭 Switzerland','🇦🇹 Austria','🇳🇱 Netherlands','🇸🇪 Sweden','🇳🇴 Norway','🇮🇸 Iceland','🇭🇷 Croatia','🇨🇿 Czech Republic','🇵🇱 Poland'],de:['🇮🇹 Italien','🇵🇹 Portugal','🇪🇸 Spanien','🇬🇷 Griechenland','🇫🇷 Frankreich','🇩🇪 Deutschland','🇨🇭 Schweiz','🇦🇹 Österreich','🇳🇱 Niederlande','🇸🇪 Schweden','🇳🇴 Norwegen','🇮🇸 Island','🇭🇷 Kroatien','🇨🇿 Tschechien','🇵🇱 Polen']},
+  asia:{en:['🇯🇵 Japan','🇹🇭 Thailand','🇮🇩 Bali / Indonesia','🇻🇳 Vietnam','🇸🇬 Singapore','🇰🇷 South Korea','🇨🇳 China','🇮🇳 India','🇳🇵 Nepal','🇲🇻 Maldives','🇵🇭 Philippines','🇲🇾 Malaysia'],de:['🇯🇵 Japan','🇹🇭 Thailand','🇮🇩 Bali / Indonesien','🇻🇳 Vietnam','🇸🇬 Singapur','🇰🇷 Südkorea','🇨🇳 China','🇮🇳 Indien','🇳🇵 Nepal','🇲🇻 Malediven','🇵🇭 Philippinen','🇲🇾 Malaysia']},
+  'north-america':{en:['🇺🇸 USA','🇨🇦 Canada','🇲🇽 Mexico','🇨🇷 Costa Rica','🇨🇺 Cuba'],de:['🇺🇸 USA','🇨🇦 Kanada','🇲🇽 Mexiko','🇨🇷 Costa Rica','🇨🇺 Kuba']},
+  'south-america':{en:['🇧🇷 Brazil','🇦🇷 Argentina','🇨🇴 Colombia','🇵🇪 Peru','🇨🇱 Chile','🇪🇨 Ecuador'],de:['🇧🇷 Brasilien','🇦🇷 Argentinien','🇨🇴 Kolumbien','🇵🇪 Peru','🇨🇱 Chile','🇪🇨 Ecuador']},
+  africa:{en:['🇲🇦 Morocco','🇿🇦 South Africa','🇹🇿 Tanzania','🇰🇪 Kenya','🇪🇬 Egypt','🇲🇺 Mauritius','🇸🇨 Seychelles'],de:['🇲🇦 Marokko','🇿🇦 Südafrika','🇹🇿 Tansania','🇰🇪 Kenia','🇪🇬 Ägypten','🇲🇺 Mauritius','🇸🇨 Seychellen']},
+  'middle-east':{en:['🇦🇪 UAE / Dubai','🇯🇴 Jordan','🇮🇱 Israel','🇴🇲 Oman','🇶🇦 Qatar','🇸🇦 Saudi Arabia'],de:['🇦🇪 VAE / Dubai','🇯🇴 Jordanien','🇮🇱 Israel','🇴🇲 Oman','🇶🇦 Katar','🇸🇦 Saudi-Arabien']},
+  oceania:{en:['🇦🇺 Australia','🇳🇿 New Zealand','🇫🇯 Fiji','🇵🇫 French Polynesia'],de:['🇦🇺 Australien','🇳🇿 Neuseeland','🇫🇯 Fidschi','🇵🇫 Französisch-Polynesien']},
+  caribbean:{en:['🇩🇴 Dominican Republic','🇯🇲 Jamaica','🇧🇧 Barbados','🇱🇨 St. Lucia','🇹🇹 Trinidad & Tobago'],de:['🇩🇴 Dominikanische Republik','🇯🇲 Jamaika','🇧🇧 Barbados','🇱🇨 St. Lucia','🇹🇹 Trinidad & Tobago']}
+};
+
+const CITIES = {
+  '🇮🇹 Italy':['Rome','Milan','Florence','Venice','Naples','Amalfi Coast','Sicily'],
+  '🇮🇹 Italien':['Rom','Mailand','Florenz','Venedig','Neapel','Amalfiküste','Sizilien'],
+  '🇵🇹 Portugal':['Lisbon','Porto','Algarve','Madeira','Azores'],
+  '🇵🇹 Portugal':['Lissabon','Porto','Algarve','Madeira','Azoren'],
+  '🇪🇸 Spain':['Barcelona','Madrid','Seville','Valencia','Ibiza','Mallorca'],
+  '🇪🇸 Spanien':['Barcelona','Madrid','Sevilla','Valencia','Ibiza','Mallorca'],
+  '🇬🇷 Greece':['Athens','Santorini','Mykonos','Crete','Rhodes'],
+  '🇬🇷 Griechenland':['Athen','Santorin','Mykonos','Kreta','Rhodos'],
+  '🇫🇷 France':['Paris','Nice','Lyon','Bordeaux','Provence','French Riviera'],
+  '🇫🇷 Frankreich':['Paris','Nizza','Lyon','Bordeaux','Provence','Côte d\'Azur'],
+  '🇩🇪 Germany':['Berlin','Munich','Hamburg','Cologne','Frankfurt'],
+  '🇩🇪 Deutschland':['Berlin','München','Hamburg','Köln','Frankfurt'],
+  '🇨🇭 Switzerland':['Zurich','Geneva','Bern','Lucerne','Zermatt','Interlaken'],
+  '🇨🇭 Schweiz':['Zürich','Genf','Bern','Luzern','Zermatt','Interlaken'],
+  '🇯🇵 Japan':['Tokyo','Kyoto','Osaka','Hiroshima','Hokkaido','Okinawa'],
+  '🇹🇭 Thailand':['Bangkok','Chiang Mai','Phuket','Koh Samui','Krabi'],
+  '🇺🇸 USA':['New York','Los Angeles','San Francisco','Miami','Las Vegas','Hawaii','New Orleans','Chicago'],
+  '🇲🇦 Morocco':['Marrakech','Fes','Casablanca','Chefchaouen','Sahara Desert'],
+  '🇲🇦 Marokko':['Marrakesch','Fes','Casablanca','Chefchaouen','Sahara'],
+  '🇦🇺 Australia':['Sydney','Melbourne','Brisbane','Cairns','Perth','Great Barrier Reef'],
+  '🇦🇺 Australien':['Sydney','Melbourne','Brisbane','Cairns','Perth','Great Barrier Reef'],
+  '🇳🇿 New Zealand':['Auckland','Queenstown','Christchurch','Wellington','Milford Sound'],
+  '🇳🇿 Neuseeland':['Auckland','Queenstown','Christchurch','Wellington','Milford Sound'],
+  '🇦🇪 UAE / Dubai':['Dubai','Abu Dhabi','Sharjah'],
+  '🇦🇪 VAE / Dubai':['Dubai','Abu Dhabi','Sharjah'],
+  '🇧🇷 Brazil':['Rio de Janeiro','São Paulo','Salvador','Amazon','Iguazu Falls'],
+  '🇧🇷 Brasilien':['Rio de Janeiro','São Paulo','Salvador','Amazonas','Iguazu-Fälle'],
+  '🇻🇳 Vietnam':['Hanoi','Ho Chi Minh City','Hoi An','Ha Long Bay','Da Nang'],
+  '🇮🇩 Bali / Indonesia':['Bali','Jakarta','Lombok','Komodo'],
+  '🇮🇩 Bali / Indonesien':['Bali','Jakarta','Lombok','Komodo'],
+};
+
+/* ═══════════════════════════════════════════════
+   TRANSLATIONS
+═══════════════════════════════════════════════ */
 let lang='en';
 let rawPlanText='';
-let selectedPlan='single';
+let destination={region:'',country:'',city:''};
 
-/* ── TRANSLATIONS ── */
 const T={
   en:{
-    heroTitle:'Your journey,<br><em>perfectly planned.</em>',
-    heroSub:'Answer a few questions – our AI creates your personal travel plan in seconds, ready to use immediately.',
-    cardLabel:'Travel Planner',
-    sname:['Destination','Style','Details','Payment','Plan'],
-    s1t:'Where do you want to go?',s1d:'Choose your destination and travel duration.',
-    s2t:'What is your travel style?',s2d:'Select everything that applies to you.',
-    s3t:'Final Details',s3d:'Almost done! A few more preferences.',
-    s4t:'Choose your plan',s4d:'Pay once – your travel plan is created immediately after payment.',
-    s5t:'Your Travel Plan ✦',s5d:'Here is your personal travel plan.',
-    loadT:'Creating your plan …',loadS:'Our AI is thinking and planning your adventure',
-    btnNew:'↩ New Plan',
-    optSingleName:'Single Plan',optSingleDesc:'1 complete travel plan\nPDF & Excel export included\nValid forever',
-    optPackName:'5-Plan Pack',optPackDesc:'5 complete travel plans\nPDF & Excel export included\nValid for 180 days\n',
-    payNote:'🔒 Secure payment via Stripe. Your plan is generated immediately after payment.',
-    paySecure:'SSL encrypted · No data stored · Cancel anytime',
-    btnPay:'💳 Pay & Create Plan',
-    badgeSingle:'One-time',badgePack:'Best Value ✦',
-    pName1:'Single Plan',pPeriod1:'one-time payment',
-    pName2:'5-Plan Pack',pPeriod2:'one-time · valid 180 days',
-    f1:['1 complete travel plan','Day-by-day itinerary','Restaurant & hotel tips','Transport guidance','PDF & Excel export'],
-    f2:['5 complete travel plans','Day-by-day itineraries','Restaurant & hotel tips','Transport guidance','PDF & Excel export'],
-    prcBtn1:'Get Single Plan',prcBtn2:'Get 5-Plan Pack',
-    flImp:'Imprint',flAgb:'Terms & Conditions',flPriv:'Privacy Policy',
-    footer:'Powered by AI – for real travelers',
+    eyebrow:'AI-Powered Travel Planning',
+    heroTitle:'Plan your dream trip<br>in <span class="accent">60 seconds</span>',
+    heroSub:'Answer a few questions. Our AI builds you a detailed, day-by-day travel plan — complete with restaurants, hotels, and Google Maps links.',
+    heroBtnText:'Start Planning →',
+    stat1:'Plan generated',stat2:'One-time price',stat3:'Destinations',
+    s1label:'Destination',s1title:'Where are you headed?',s1desc:'Choose your region, country, and city — or let us surprise you.',
+    s2label:'Travel Style',s2title:'What kind of traveler are you?',s2desc:'Pick your vibe — choose as many as you like.',
+    s3label:'Details',s3title:'Almost there!',s3desc:'Just a few more details to make your plan perfect.',
+    s4label:'Payment',s4title:'One small step for your wallet…',s4desc:'…one giant leap for your next adventure. Your plan is generated instantly after payment.',
+    lRegion:'Region',lCountry:'Country (optional)',lCity:'City (optional)',lDuration:'Duration',lPeople:'Travelers',lStyle:'Your interests',lBudget:'Daily budget per person',lAccom:'Accommodation',lTransport:'Getting around',lWishes:'Anything else? (optional)',
+    wishPH:'e.g. vegetarian food, wheelchair accessible, avoid tourist traps...',
+    durations:['— Select —','3–4 days (Weekend)','5–7 days (1 week)','8–14 days (2 weeks)','15–21 days (3 weeks)','3+ weeks'],
+    peoples:['— Select —','Solo','Couple','Family with kids','Group (3–6)','Large group (7+)'],
+    budgets:['— Select —','🎒 Budget (under $50/day)','👜 Mid-range ($50–150/day)','✈️ Comfort ($150–300/day)','💎 Luxury ($300+/day)'],
+    accoms:['— Select —','Hostel','Budget hotel (2–3★)','Mid-range hotel (3–4★)','Luxury hotel (4–5★)','Boutique / B&B','Vacation rental','Camping / Glamping'],
+    transports:['— Select —','🚇 Public transport','🚗 Rental car','🛵 Scooter','🚲 Bicycle','🚶 Walking','🔀 Mix'],
+    chips:['🏖️ Beach & Sea','🏛️ Culture & History','🍜 Food & Cuisine','🥾 Hiking & Nature','🎭 Nightlife','🧘 Wellness & Spa','📸 Photography','🛍️ Shopping','🏔️ Adventure','🤝 Local Culture','🎨 Art & Design','🍷 Wine & Gastronomy'],
+    payPlanName:'Complete Travel Plan',payPriceDesc:'One-time payment · No subscription · Yours forever',
+    payFeatures:['Full day-by-day itinerary','Restaurant & hotel recommendations','Google Maps links for every spot','PDF & Excel export','Share with your travel buddy'],
+    btnPay:'💳 Pay $7 & Create My Plan',payNote:'Secure payment via Stripe · SSL encrypted · Instant delivery',
+    loadTitle:'Building your perfect trip…',loadSub:'This takes about 10–15 seconds',
+    ls1:'Analyzing your preferences',ls2:'Crafting your itinerary',ls3:'Adding local tips & maps',ls4:'Finalizing your plan',
+    s5title:'Your Travel Plan ✈️',s5sub:'Ready to go. Download, share, or explore below.',
+    btnPdf:'⬇ PDF',btnExcel:'⬇ Excel',btnShare:'✈️ Send to Travel Buddy',btnNew:'↩ New Plan',
+    flImp:'Imprint',flAgb:'Terms',flPriv:'Privacy',footer:'Powered by AI',
     impTitle:'Imprint',agbTitle:'Terms & Conditions',privTitle:'Privacy Policy',
-    chips:['🏖️ Beach & Sea','🏛️ Culture & History','🍜 Food & Cuisine','🥾 Hiking & Nature','🎭 Nightlife & Party','🧘 Wellness & Spa','📸 Photography','🛍️ Shopping','🏔️ Adventure & Sports','🤝 Local Culture'],
-    regions:['— Select —','🌍 Europe','🌏 Asia','🌎 North America','🌎 South America','🌍 Africa','🌏 Oceania','🕌 Middle East'],
-    countries:['— Select —','✨ Surprise me','Japan','Italy','Portugal','Spain','Thailand','Bali','Morocco','Greece','USA','Iceland','New Zealand'],
-    durations:['— Select —','3–4 days (Short trip)','5–7 days (1 week)','8–14 days (2 weeks)','15–21 days (3 weeks)','More than 3 weeks'],
-    peoples:['— Select —','Solo','Couple','Family with children','Group (3–6 people)','Large group (7+)'],
-    budgets:['— Select —','🎒 Backpacker (under $50/day)','👜 Mid-range ($50–150/day)','✈️ Comfort ($150–300/day)','💎 Luxury (over $300/day)'],
-    accoms:['— Select —','Hostel / Backpacker','Budget hotels (2–3 stars)','Mid-range hotels (3–4 stars)','Luxury hotels (4–5 stars)','Boutique hotels & B&B','Vacation rentals / Apartments','Camping & Glamping'],
-    transports:['— Select —','🚇 Public transport','🚗 Rental car','🛵 Scooter / Motorbike','🚲 Bicycle','🚶 Walking','🔀 Mix of everything'],
-    wishPH:'e.g. vegetarian restaurants, wheelchair accessible, certain sights to avoid...',
-    lRegion:'Region',lCountry:'Country / City (optional)',lDuration:'Duration',lPeople:'Travelers',
-    lStyle:'Travel Style (multi-select)',lBudget:'Budget (per person / day)',lAccom:'Accommodation',lTransport:'Local Transport',lWishes:'Special Requests (optional)',
-    promptFn:(r,c,d,p,s,b,a,t,w)=>`You are an experienced travel planner. Create a detailed travel plan:\nRegion: ${r} | Destination: ${c} | Duration: ${d} | Travelers: ${p} | Style: ${s} | Budget: ${b} | Accommodation: ${a} | Transport: ${t} | Requests: ${w}\n\nIMPORTANT – Formatting rules:\n- Start with 2-3 introductory sentences about the trip\n- Structure each day EXACTLY like this:\nDAY 1: [creative title]\nMorning: [activities in full sentences]\nLunch: [restaurant recommendation with name]\nAfternoon: [activities in full sentences]\nEvening: [dinner and evening program]\nTip: [one practical insider tip]\n- Do NOT use Markdown symbols like *, **, #, - at line start\n- Write in full, flowing sentences\n- Be enthusiastic and inspiring\n- Language: English`
+    promptFn:(r,c,ci,d,p,s,b,a,t,w)=>`You are an expert travel planner. Create a detailed, exciting travel plan based on these preferences:
+Region: ${r} | Country: ${c||'flexible'} | City: ${ci||'flexible'} | Duration: ${d} | Travelers: ${p} | Style: ${s} | Budget: ${b} | Accommodation: ${a} | Transport: ${t} | Special requests: ${w}
+
+STRICT FORMATTING RULES:
+1. Start with 2-3 enthusiastic intro sentences about this destination
+2. For EACH day use EXACTLY this format:
+DAY [N]: [Creative, evocative day title]
+Morning: [2-3 sentences of activities. For each specific place mention, add a Google Maps link like: 🗺️ [Place Name](https://maps.google.com/?q=Place+Name+City+Country)]
+Lunch: [Specific restaurant recommendation with name, cuisine type, and atmosphere. Add: 🗺️ [Restaurant Name](https://maps.google.com/?q=Restaurant+Name+City+Country)]
+Afternoon: [2-3 sentences. Include Google Maps links for specific venues]
+Evening: [Dinner + evening activities. Include Google Maps links]
+Tip: [One brilliant insider tip that most tourists don't know]
+3. NO markdown symbols (* ** # ## --) at line starts
+4. Write in flowing, enthusiastic sentences
+5. Be specific with real place names
+6. Language: English`
   },
   de:{
-    heroTitle:'Deine Reise,<br><em>perfekt geplant.</em>',
-    heroSub:'Beantworte ein paar Fragen – unsere KI erstellt dir in Sekunden einen persönlichen Reiseplan.',
-    cardLabel:'Reiseplaner',
-    sname:['Ziel','Stil','Details','Zahlung','Plan'],
-    s1t:'Wohin geht die Reise?',s1d:'Wähle dein Ziel und die Reisedauer aus.',
-    s2t:'Was ist dein Reisestil?',s2d:'Wähle alles, was auf dich zutrifft.',
-    s3t:'Letzte Details',s3d:'Fast fertig! Noch ein paar Präferenzen.',
-    s4t:'Wähle deinen Plan',s4d:'Einmalig bezahlen – dein Reiseplan wird sofort nach der Zahlung erstellt.',
-    s5t:'Dein Reiseplan ✦',s5d:'Hier ist dein persönlicher Reiseplan.',
-    loadT:'Dein Plan wird erstellt …',loadS:'Unsere KI denkt nach und plant dein Abenteuer',
-    btnNew:'↩ Neu',
-    optSingleName:'Einzelplan',optSingleDesc:'1 vollständiger Reiseplan\nPDF & Excel Export inklusive\nUnbegrenzt gültig',
-    optPackName:'5er-Paket',optPackDesc:'5 vollständige Reisepläne\nPDF & Excel Export inklusive\n180 Tage gültig\n',
-    payNote:'🔒 Sichere Zahlung via Stripe. Dein Plan wird sofort nach der Zahlung erstellt.',
-    paySecure:'SSL verschlüsselt · Keine Datenspeicherung · Jederzeit stornierbar',
-    btnPay:'💳 Bezahlen & Plan erstellen',
-    badgeSingle:'Einmalig',badgePack:'Bestes Angebot ✦',
-    pName1:'Einzelplan',pPeriod1:'einmalige Zahlung',
-    pName2:'5er-Paket',pPeriod2:'einmalig · 180 Tage gültig',
-    f1:['1 vollständiger Reiseplan','Detaillierter Tagesplan','Restaurant & Hotel-Tipps','Transport-Hinweise','PDF & Excel Export'],
-    f2:['5 vollständige Reisepläne','Detaillierte Tagespläne','Restaurant & Hotel-Tipps','Transport-Hinweise','PDF & Excel Export'],
-    prcBtn1:'Einzelplan kaufen',prcBtn2:'5er-Paket kaufen',
-    flImp:'Impressum',flAgb:'AGB',flPriv:'Datenschutz',
-    footer:'Powered by KI – für echte Reisende',
+    eyebrow:'KI-gestützter Reiseplaner',
+    heroTitle:'Plane deinen Traumurlaub<br>in <span class="accent">60 Sekunden</span>',
+    heroSub:'Beantworte ein paar Fragen. Unsere KI erstellt dir einen detaillierten Tagesplan – mit Restaurants, Hotels und Google Maps Links.',
+    heroBtnText:'Jetzt planen →',
+    stat1:'Plan erstellt',stat2:'Einmaliger Preis',stat3:'Destinationen',
+    s1label:'Destination',s1title:'Wohin geht die Reise?',s1desc:'Wähle deine Region, Land und Stadt — oder lass dich überraschen.',
+    s2label:'Reisestil',s2title:'Was für ein Reisender bist du?',s2desc:'Wähle alles, was auf dich zutrifft.',
+    s3label:'Details',s3title:'Fast geschafft!',s3desc:'Noch ein paar Details für deinen perfekten Plan.',
+    s4label:'Zahlung',s4title:'Ein kleiner Schritt für dein Portemonnaie…',s4desc:'…ein riesiger Sprung für dein nächstes Abenteuer. Dein Plan wird sofort nach der Zahlung erstellt.',
+    lRegion:'Region',lCountry:'Land (optional)',lCity:'Stadt (optional)',lDuration:'Dauer',lPeople:'Reisende',lStyle:'Deine Interessen',lBudget:'Tagesbudget pro Person',lAccom:'Unterkunft',lTransport:'Fortbewegung',lWishes:'Sonst noch etwas? (optional)',
+    wishPH:'z.B. vegetarisches Essen, barrierefrei, keine Touristenfallen...',
+    durations:['— Wählen —','3–4 Tage (Wochenende)','5–7 Tage (1 Woche)','8–14 Tage (2 Wochen)','15–21 Tage (3 Wochen)','3+ Wochen'],
+    peoples:['— Wählen —','Solo','Zu zweit','Familie mit Kindern','Gruppe (3–6)','Grosse Gruppe (7+)'],
+    budgets:['— Wählen —','🎒 Budget (unter $50/Tag)','👜 Mittel ($50–150/Tag)','✈️ Komfort ($150–300/Tag)','💎 Luxus ($300+/Tag)'],
+    accoms:['— Wählen —','Hostel','Budget Hotel (2–3★)','Mittelklasse Hotel (3–4★)','Luxushotel (4–5★)','Boutique / B&B','Ferienwohnung','Camping / Glamping'],
+    transports:['— Wählen —','🚇 Öffentliche Verkehrsmittel','🚗 Mietwagen','🛵 Motorroller','🚲 Fahrrad','🚶 Zu Fuss','🔀 Mix'],
+    chips:['🏖️ Strand & Meer','🏛️ Kultur & Geschichte','🍜 Essen & Kulinarik','🥾 Wandern & Natur','🎭 Nightlife','🧘 Wellness & Spa','📸 Fotografie','🛍️ Shopping','🏔️ Abenteuer','🤝 Lokale Kultur','🎨 Kunst & Design','🍷 Wein & Gastronomie'],
+    payPlanName:'Vollständiger Reiseplan',payPriceDesc:'Einmalige Zahlung · Kein Abo · Für immer deins',
+    payFeatures:['Vollständiger Tagesplan','Restaurant & Hotel-Empfehlungen','Google Maps Links für jeden Ort','PDF & Excel Export','Mit deinem Travel Buddy teilen'],
+    btnPay:'💳 $7 bezahlen & Plan erstellen',payNote:'Sichere Zahlung via Stripe · SSL-verschlüsselt · Sofort verfügbar',
+    loadTitle:'Dein perfekter Trip wird erstellt…',loadSub:'Das dauert ca. 10–15 Sekunden',
+    ls1:'Deine Präferenzen werden analysiert',ls2:'Dein Reiseplan wird erstellt',ls3:'Lokale Tipps & Maps werden hinzugefügt',ls4:'Dein Plan wird finalisiert',
+    s5title:'Dein Reiseplan ✈️',s5sub:'Bereit. Herunterladen, teilen oder entdecken.',
+    btnPdf:'⬇ PDF',btnExcel:'⬇ Excel',btnShare:'✈️ Schick dem Travel Buddy',btnNew:'↩ Neu',
+    flImp:'Impressum',flAgb:'AGB',flPriv:'Datenschutz',footer:'Powered by KI',
     impTitle:'Impressum',agbTitle:'Allgemeine Geschäftsbedingungen',privTitle:'Datenschutzerklärung',
-    chips:['🏖️ Strand & Meer','🏛️ Kultur & Geschichte','🍜 Essen & Kulinarik','🥾 Wandern & Natur','🎭 Nightlife & Party','🧘 Wellness & Spa','📸 Fotografie','🛍️ Shopping','🏔️ Abenteuer & Sport','🤝 Lokale Kultur'],
-    regions:['— Wählen —','🌍 Europa','🌏 Asien','🌎 Nordamerika','🌎 Südamerika','🌍 Afrika','🌏 Ozeanien','🕌 Mittlerer Osten'],
-    countries:['— Wählen —','✨ Überrasch mich','Japan','Italien','Portugal','Spanien','Thailand','Bali','Marokko','Griechenland','USA','Island','Neuseeland'],
-    durations:['— Wählen —','3–4 Tage (Kurztrip)','5–7 Tage (1 Woche)','8–14 Tage (2 Wochen)','15–21 Tage (3 Wochen)','Mehr als 3 Wochen'],
-    peoples:['— Wählen —','Solo','Zu zweit','Familie mit Kindern','Gruppe (3–6 Personen)','Große Gruppe (7+)'],
-    budgets:['— Wählen —','🎒 Backpacker (unter $50/Tag)','👜 Mittel ($50–150/Tag)','✈️ Komfort ($150–300/Tag)','💎 Luxus (über $300/Tag)'],
-    accoms:['— Wählen —','Hostel / Backpacker','Günstige Hotels (2–3 Sterne)','Mittelklasse-Hotels (3–4 Sterne)','Luxushotels (4–5 Sterne)','Boutique-Hotels & B&B','Ferienwohnungen / Apartments','Camping & Glamping'],
-    transports:['— Wählen —','🚇 Öffentliche Verkehrsmittel','🚗 Mietwagen','🛵 Motorroller / Motorrad','🚲 Fahrrad','🚶 Zu Fuß','🔀 Mischung aus allem'],
-    wishPH:'z.B. vegetarische Restaurants, barrierefrei, bestimmte Sehenswürdigkeiten vermeiden...',
-    lRegion:'Region',lCountry:'Land / Stadt (optional)',lDuration:'Dauer',lPeople:'Reisende',
-    lStyle:'Reisestil (Mehrfachauswahl)',lBudget:'Budget (pro Person / Tag)',lAccom:'Unterkunft',lTransport:'Transport vor Ort',lWishes:'Besondere Wünsche (optional)',
-    promptFn:(r,c,d,p,s,b,a,t,w)=>`Du bist ein erfahrener Reiseplaner. Erstelle einen detaillierten Reiseplan:\nRegion: ${r} | Ziel: ${c} | Dauer: ${d} | Reisende: ${p} | Stil: ${s} | Budget: ${b} | Unterkunft: ${a} | Transport: ${t} | Wünsche: ${w}\n\nWICHTIG – Formatierungsregeln:\n- Beginne mit 2-3 einleitenden Sätzen zur Reise\n- Strukturiere jeden Tag GENAU so:\nTAG 1: [kreativer Titelname]\nMorgen: [Aktivitäten in ganzen Sätzen]\nMittag: [Restaurantempfehlung mit Name]\nNachmittag: [Aktivitäten in ganzen Sätzen]\nAbend: [Abendessen und Abendprogramm]\nTipp: [Ein praktischer Insider-Tipp]\n- Verwende KEINE Markdown-Symbole wie *, **, #, - am Zeilenanfang\n- Schreibe in ganzen, fliessenden Sätzen\n- Sei enthusiastisch und inspirierend\n- Sprache: Deutsch`
+    promptFn:(r,c,ci,d,p,s,b,a,t,w)=>`Du bist ein erfahrener Reiseplaner. Erstelle einen detaillierten, begeisternden Reiseplan:\nRegion: ${r} | Land: ${c||'flexibel'} | Stadt: ${ci||'flexibel'} | Dauer: ${d} | Reisende: ${p} | Stil: ${s} | Budget: ${b} | Unterkunft: ${a} | Transport: ${t} | Wünsche: ${w}\n\nFORMATIERUNGSREGELN:\n1. Beginne mit 2-3 begeisterten Einleitungssätzen\n2. Für JEDEN Tag GENAU dieses Format:\nTAG [N]: [Kreativer Tagestitel]\nMorgen: [2-3 Sätze Aktivitäten. Für jeden konkreten Ort einen Google Maps Link: 🗺️ [Ortsname](https://maps.google.com/?q=Ortsname+Stadt+Land)]\nMittag: [Konkretes Restaurant mit Name und Küche. 🗺️ [Restaurantname](https://maps.google.com/?q=Restaurantname+Stadt+Land)]\nNachmittag: [2-3 Sätze mit Google Maps Links]\nAbend: [Abendessen + Abendprogramm mit Links]\nTipp: [Ein Insider-Tipp den die meisten Touristen nicht kennen]\n3. KEINE Markdown-Symbole (* ** # ##) am Zeilenanfang\n4. Ganzen Sätze, begeisternd geschrieben\n5. Echte, konkrete Ortsnamen verwenden\n6. Sprache: Deutsch`
   }
 };
 
+/* ═══════════════════════════════════════════════
+   INIT & LANG
+═══════════════════════════════════════════════ */
 function setLang(l){
   lang=l;
   document.querySelectorAll('.lang-btn').forEach(b=>b.classList.toggle('active',b.textContent===l.toUpperCase()));
-  const t=T[l];
   document.documentElement.lang=l;
+  const t=T[l];
+  document.getElementById('eyebrow-text').textContent=t.eyebrow;
   document.getElementById('hero-title').innerHTML=t.heroTitle;
   document.getElementById('hero-sub').textContent=t.heroSub;
-  document.getElementById('card-label').textContent=t.cardLabel;
-  ['sname1','sname2','sname3','sname4','sname5'].forEach((id,i)=>document.getElementById(id).textContent=t.sname[i]);
-  document.getElementById('s1-title').textContent=t.s1t;document.getElementById('s1-desc').textContent=t.s1d;
-  document.getElementById('s2-title').textContent=t.s2t;document.getElementById('s2-desc').textContent=t.s2d;
-  document.getElementById('s3-title').textContent=t.s3t;document.getElementById('s3-desc').textContent=t.s3d;
-  document.getElementById('s4-title').textContent=t.s4t;document.getElementById('s4-desc').textContent=t.s4d;
-  document.getElementById('s5-title').textContent=t.s5t;document.getElementById('s5-desc').textContent=t.s5d;
-  document.getElementById('loading-text').textContent=t.loadT;document.getElementById('loading-sub').textContent=t.loadS;
-  document.getElementById('btn-new').textContent=t.btnNew;
-  document.getElementById('opt-single-name').textContent=t.optSingleName;
-  document.getElementById('opt-single-desc').textContent=t.optSingleDesc+(l==='de'?'':'');
-  document.getElementById('opt-pack-name').textContent=t.optPackName;
-  document.getElementById('opt-pack-desc').innerHTML=t.optPackDesc+(l==='de'?'<strong style="color:var(--terra)">Spare $14!</strong>':'<strong style="color:var(--terra)">Save $14!</strong>');
-  document.getElementById('pay-note').textContent=t.payNote;
-  document.getElementById('pay-secure').textContent=t.paySecure;
-  document.getElementById('btn-pay').textContent=t.btnPay;
-  document.getElementById('badge-single').textContent=t.badgeSingle;
-  document.getElementById('badge-pack').textContent=t.badgePack;
-  document.getElementById('price-name1').textContent=t.pName1;document.getElementById('price-period1').textContent=t.pPeriod1;
-  document.getElementById('price-name2').textContent=t.pName2;document.getElementById('price-period2').textContent=t.pPeriod2;
-  document.getElementById('features1').innerHTML=t.f1.map(f=>`<li>${f}</li>`).join('');
-  document.getElementById('features2').innerHTML=t.f2.map(f=>`<li>${f}</li>`).join('');
-  document.getElementById('prc-btn1').textContent=t.prcBtn1;document.getElementById('prc-btn2').textContent=t.prcBtn2;
-  document.getElementById('fl-imp').textContent=t.flImp;document.getElementById('fl-agb').textContent=t.flAgb;document.getElementById('fl-priv').textContent=t.flPriv;
-  document.getElementById('footer-text').textContent=t.footer;
-  document.getElementById('l-region').textContent=t.lRegion;document.getElementById('l-country').textContent=t.lCountry;
+  document.getElementById('hero-btn-text').textContent=t.heroBtnText;
+  document.getElementById('stat1').textContent=t.stat1;
+  document.getElementById('stat2').textContent=t.stat2;
+  document.getElementById('stat3').textContent=t.stat3;
+  // Steps
+  document.getElementById('s1-label').textContent=t.s1label;document.getElementById('s1-title').textContent=t.s1title;document.getElementById('s1-desc').textContent=t.s1desc;
+  document.getElementById('s2-label').textContent=t.s2label;document.getElementById('s2-title').textContent=t.s2title;document.getElementById('s2-desc').textContent=t.s2desc;
+  document.getElementById('s3-label').textContent=t.s3label;document.getElementById('s3-title').textContent=t.s3title;document.getElementById('s3-desc').textContent=t.s3desc;
+  document.getElementById('s4-label').textContent=t.s4label;document.getElementById('s4-title').textContent=t.s4title;document.getElementById('s4-desc').textContent=t.s4desc;
+  // Labels
+  document.getElementById('l-region').textContent=t.lRegion;
+  document.getElementById('l-country').innerHTML=t.lCountry.replace(' (optional)',' <span style="color:var(--ink-light);font-weight:400">(optional)</span>');
+  document.getElementById('l-city').innerHTML=t.lCity.replace(' (optional)',' <span style="color:var(--ink-light);font-weight:400">(optional)</span>');
   document.getElementById('l-duration').textContent=t.lDuration;document.getElementById('l-people').textContent=t.lPeople;
   document.getElementById('l-style').textContent=t.lStyle;document.getElementById('l-budget').textContent=t.lBudget;
   document.getElementById('l-accom').textContent=t.lAccom;document.getElementById('l-transport').textContent=t.lTransport;
-  document.getElementById('l-wishes').textContent=t.lWishes;
+  document.getElementById('l-wishes').innerHTML=t.lWishes;
   document.getElementById('txt-wishes').placeholder=t.wishPH;
-  // Update select options
-  updateSelect('sel-region',t.regions);updateSelect('sel-country',t.countries);
-  updateSelect('sel-duration',t.durations);updateSelect('sel-people',t.peoples);
-  updateSelect('sel-budget',t.budgets);updateSelect('sel-accom',t.accoms);updateSelect('sel-transport',t.transports);
+  // Selects
+  populateSelect('sel-duration',t.durations);populateSelect('sel-people',t.peoples);
+  populateSelect('sel-budget',t.budgets);populateSelect('sel-accom',t.accoms);populateSelect('sel-transport',t.transports);
+  // Regions
+  const regSel=document.getElementById('sel-region');const curReg=regSel.value;
+  regSel.innerHTML='<option value="">— '+(l==='de'?'Region wählen':'Select a region')+' —</option>';
+  REGIONS[l].forEach(r=>regSel.innerHTML+=`<option value="${r.v}">${r.l}</option>`);
+  if(curReg){regSel.value=curReg;onRegionChange();}
   // Chips
-  const chips=document.querySelectorAll('#chips-style .chip');
-  chips.forEach((c,i)=>{const sel=c.classList.contains('selected');c.textContent=t.chips[i];if(sel)c.classList.add('selected');});
-  // Modal titles
-  document.getElementById('imp-title').textContent=t.impTitle;
-  document.getElementById('agb-title').textContent=t.agbTitle;
-  document.getElementById('priv-title').textContent=t.privTitle;
+  buildChips();
+  // Payment
+  document.getElementById('pay-plan-name').textContent=t.payPlanName;
+  document.getElementById('pay-price-desc').textContent=t.payPriceDesc;
+  document.getElementById('pay-features').innerHTML=t.payFeatures.map(f=>`<li>${f}</li>`).join('');
+  document.getElementById('btn-pay').textContent=t.btnPay;
+  document.getElementById('pay-note').textContent=t.payNote;
+  // Loading
+  document.getElementById('loading-title').textContent=t.loadTitle;
+  document.getElementById('loading-sub').textContent=t.loadSub;
+  document.getElementById('ls1-text').textContent=t.ls1;document.getElementById('ls2-text').textContent=t.ls2;
+  document.getElementById('ls3-text').textContent=t.ls3;document.getElementById('ls4-text').textContent=t.ls4;
+  // Result
+  document.getElementById('s5-title').textContent=t.s5title;document.getElementById('s5-sub').textContent=t.s5sub;
+  document.getElementById('btn-pdf').textContent=t.btnPdf;document.getElementById('btn-excel').textContent=t.btnExcel;
+  document.getElementById('btn-share').textContent=t.btnShare;document.getElementById('btn-new').textContent=t.btnNew;
+  // Footer
+  document.getElementById('fl-imp').textContent=t.flImp;document.getElementById('fl-agb').textContent=t.flAgb;document.getElementById('fl-priv').textContent=t.flPriv;
+  document.getElementById('footer-text').textContent=t.footer;
+  document.getElementById('imp-title').textContent=t.impTitle;document.getElementById('agb-title').textContent=t.agbTitle;document.getElementById('priv-title').textContent=t.privTitle;
 }
 
-function updateSelect(id, options){
-  const sel=document.getElementById(id);
-  const cur=sel.value;
-  sel.innerHTML=options.map((o,i)=>`<option value="${i===0?'':o}">${o}</option>`).join('');
+function populateSelect(id,opts){
+  const sel=document.getElementById(id);const cur=sel.value;
+  sel.innerHTML=opts.map((o,i)=>`<option value="${i===0?'':o}">${o}</option>`).join('');
+  if(cur)sel.value=cur;
 }
 
-/* ── STEPS ── */
+function buildChips(){
+  const wrap=document.getElementById('chips-style');
+  const selected=[...wrap.querySelectorAll('.chip.selected')].map(c=>c.dataset.idx);
+  wrap.innerHTML='';
+  T[lang].chips.forEach((ch,i)=>{
+    const d=document.createElement('div');d.className='chip'+(selected.includes(String(i))?' selected':'');
+    d.dataset.idx=i;d.textContent=ch;d.onclick=()=>d.classList.toggle('selected');
+    wrap.appendChild(d);
+  });
+}
+
+/* ═══════════════════════════════════════════════
+   DYNAMIC FIELDS
+═══════════════════════════════════════════════ */
+function onRegionChange(){
+  const region=document.getElementById('sel-region').value;
+  destination.region=region;destination.country='';destination.city='';
+  document.getElementById('sel-country').value='';
+  document.getElementById('sel-city').value='';
+  document.getElementById('fg-city').classList.add('field-hidden');
+  if(!region){document.getElementById('fg-country').classList.add('field-hidden');return;}
+  const countries=COUNTRIES[region]?COUNTRIES[region][lang]||COUNTRIES[region].en:[];
+  const sel=document.getElementById('sel-country');
+  sel.innerHTML=`<option value="">— ${lang==='de'?'Land wählen (optional)':'Select country (optional)'} —</option>`;
+  countries.forEach(c=>sel.innerHTML+=`<option value="${c}">${c}</option>`);
+  document.getElementById('fg-country').classList.remove('field-hidden');
+}
+
+function onCountryChange(){
+  const country=document.getElementById('sel-country').value;
+  destination.country=country;destination.city='';
+  document.getElementById('sel-city').value='';
+  if(!country){document.getElementById('fg-city').classList.add('field-hidden');return;}
+  // Find cities for this country (try both lang keys)
+  const cities=CITIES[country]||[];
+  if(cities.length===0){document.getElementById('fg-city').classList.add('field-hidden');return;}
+  const sel=document.getElementById('sel-city');
+  sel.innerHTML=`<option value="">— ${lang==='de'?'Stadt wählen (optional)':'Select city (optional)'} —</option>`;
+  cities.forEach(c=>sel.innerHTML+=`<option value="${c}">${c}</option>`);
+  document.getElementById('fg-city').classList.remove('field-hidden');
+}
+
+/* ═══════════════════════════════════════════════
+   STEPS
+═══════════════════════════════════════════════ */
 let currentStep=1;
+const TOTAL_STEPS=5;
 function goStep(n){
   document.getElementById('step'+currentStep).classList.remove('active');
   document.getElementById('step'+n).classList.add('active');
-  [1,2,3,4,5].forEach(i=>{const dot=document.getElementById('dot'+i);dot.classList.remove('active','done');if(i<n)dot.classList.add('done');else if(i===n)dot.classList.add('active');});
+  document.getElementById('progress-fill').style.width=((n/TOTAL_STEPS)*100)+'%';
   currentStep=n;
-  document.getElementById('planner-card').scrollIntoView({behavior:'smooth',block:'start'});
+  document.getElementById('planner').scrollIntoView({behavior:'smooth',block:'start'});
 }
 
-function toggleChip(el){el.classList.toggle('selected');}
-function getChips(){return[...document.querySelectorAll('#chips-style .chip.selected')].map(c=>c.textContent).join(', ')||'None specified';}
-
-/* ── PAYMENT PLAN SELECTION ── */
-function selectPlan(plan){
-  selectedPlan=plan;
-  document.getElementById('opt-single').classList.toggle('selected',plan==='single');
-  document.getElementById('opt-pack').classList.toggle('selected',plan==='pack');
+function getChips(){
+  return [...document.querySelectorAll('#chips-style .chip.selected')].map(c=>c.textContent).join(', ')||'No preference';
 }
-// Default selection
-selectPlan('single');
 
+/* ═══════════════════════════════════════════════
+   LOADING ANIMATION
+═══════════════════════════════════════════════ */
+function animateLoading(){
+  const steps=['ls1','ls2','ls3','ls4'];
+  let i=0;
+  steps.forEach(id=>document.getElementById(id).className='loading-step');
+  document.getElementById('ls1').className='loading-step active';
+  const iv=setInterval(()=>{
+    if(i<steps.length-1){
+      document.getElementById(steps[i]).className='loading-step done';
+      i++;document.getElementById(steps[i]).className='loading-step active';
+    }else{clearInterval(iv);}
+  },2500);
+  return iv;
+}
+
+/* ═══════════════════════════════════════════════
+   PAYMENT
+═══════════════════════════════════════════════ */
 function proceedToPayment(){
-  const price=selectedPlan==='single'?'$7':'$21';
-  const planName=selectedPlan==='single'?(lang==='de'?'Einzelplan':'Single Plan'):(lang==='de'?'5er-Paket':'5-Plan Pack');
-  // In live version: replace alert with Stripe Payment Link redirect
-  const confirmed=confirm(lang==='de'
-    ?`Stripe-Zahlung: ${planName} für ${price}\n\nIn der Live-Version öffnet sich hier das Stripe-Checkout-Fenster.\n\nFür den Test: Klicke OK um den Plan zu generieren.`
-    :`Stripe Payment: ${planName} for ${price}\n\nIn the live version, the Stripe checkout window opens here.\n\nFor testing: Click OK to generate the plan.`);
-  if(confirmed) generatePlan();
+  // STRIPE INTEGRATION: Replace this alert with your Stripe Payment Link:
+  // window.location.href = 'https://buy.stripe.com/YOUR_PAYMENT_LINK';
+  const msg=lang==='de'
+    ?'Stripe-Zahlung wird hier eingebunden.\n\nIn der Live-Version öffnet sich das Stripe-Checkout-Fenster.\n\nFür den Test: OK klicken um den Plan zu generieren.'
+    :'Stripe payment will be connected here.\n\nIn the live version, Stripe checkout opens.\n\nFor testing: Click OK to generate the plan.';
+  if(confirm(msg))generatePlan();
 }
 
-/* ── RENDER PLAN ── */
+/* ═══════════════════════════════════════════════
+   GENERATE
+═══════════════════════════════════════════════ */
+async function generatePlan(){
+  goStep(5);
+  document.getElementById('loading-view').style.display='block';
+  document.getElementById('result-view').style.display='none';
+  const iv=animateLoading();
+  const r=document.getElementById('sel-region').value||'flexible';
+  const c=document.getElementById('sel-country').value||'';
+  const ci=document.getElementById('sel-city').value||'';
+  const d=document.getElementById('sel-duration').value||'flexible';
+  const p=document.getElementById('sel-people').value||'flexible';
+  const s=getChips();
+  const b=document.getElementById('sel-budget').value||'flexible';
+  const a=document.getElementById('sel-accom').value||'flexible';
+  const t=document.getElementById('sel-transport').value||'flexible';
+  const w=document.getElementById('txt-wishes').value||'none';
+  const prompt=T[lang].promptFn(r,c,ci,d,p,s,b,a,t,w);
+  try{
+    const res=await fetch('/api/plan',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({prompt})});
+    const data=await res.json();
+    clearInterval(iv);
+    document.getElementById('loading-view').style.display='none';
+    document.getElementById('result-view').style.display='block';
+    if(data.result){renderPlan(data.result);}
+    else{document.getElementById('result-plan').textContent='⚠️ Error generating plan. Please try again.';}
+  }catch(e){
+    clearInterval(iv);
+    document.getElementById('loading-view').style.display='none';
+    document.getElementById('result-view').style.display='block';
+    document.getElementById('result-plan').textContent='⚠️ Connection error. Please try again.';
+  }
+}
+
+/* ═══════════════════════════════════════════════
+   RENDER PLAN
+═══════════════════════════════════════════════ */
+const SECTION_ICONS={morning:'🌅',morgen:'🌅',lunch:'🍽️',mittag:'🍽️',afternoon:'🌆',nachmittag:'🌆',evening:'🌙',abend:'🌙',tip:'💡',tipp:'💡'};
+
 function renderPlan(text){
   rawPlanText=text;
-  const container=document.getElementById('result-plan');
-  container.innerHTML='';
+  const container=document.getElementById('result-plan');container.innerHTML='';
   const lines=text.split('\n').map(l=>l.trim()).filter(l=>l.length>0);
   let introLines=[],dayBlocks=[],currentDay=null;
-  const isDayLine=l=>/^TAG\s+\d+|^DAY\s+\d+/i.test(l);
-  const isSectionLine=l=>/^(Morgen|Mittag|Nachmittag|Abend|Tipp|Morning|Lunch|Afternoon|Evening|Tip):/i.test(l);
+  const isDayLine=l=>/^(DAY|TAG)\s+\d+/i.test(l);
+  const isSectionLine=l=>/^(Morning|Morgen|Lunch|Mittag|Afternoon|Nachmittag|Evening|Abend|Tip|Tipp):/i.test(l);
   for(const line of lines){
     if(isDayLine(line)){if(currentDay)dayBlocks.push(currentDay);currentDay={title:line,sections:[]};}
     else if(currentDay){
@@ -571,107 +782,176 @@ function renderPlan(text){
     }else{introLines.push(line);}
   }
   if(currentDay)dayBlocks.push(currentDay);
-  if(introLines.length>0){const intro=document.createElement('div');intro.className='plan-intro';intro.textContent=introLines.join(' ');container.appendChild(intro);}
-  for(const day of dayBlocks){
+
+  if(introLines.length>0){
+    const intro=document.createElement('div');intro.className='plan-intro';
+    intro.textContent=introLines.join(' ');container.appendChild(intro);
+  }
+
+  dayBlocks.forEach((day,dayIdx)=>{
     const dayEl=document.createElement('div');dayEl.className='plan-day';
-    const header=document.createElement('div');header.className='plan-day-header';header.textContent=day.title;dayEl.appendChild(header);
+    const header=document.createElement('div');header.className='plan-day-header';
+    const num=document.createElement('span');num.className='plan-day-num';num.textContent='Day '+(dayIdx+1);
+    header.appendChild(num);
+    const titleText=document.createTextNode(' '+day.title.replace(/^(DAY|TAG)\s+\d+:\s*/i,''));
+    header.appendChild(titleText);
+    dayEl.appendChild(header);
     const body=document.createElement('div');body.className='plan-day-body';
-    for(const sec of day.sections){
+    day.sections.forEach(sec=>{
+      const isTip=/^(Tip|Tipp)$/i.test(sec.label);
       const secEl=document.createElement('div');secEl.className='plan-section';
-      const isTip=/^Tipp|^Tip/i.test(sec.label);
-      if(sec.label){const labelEl=document.createElement('div');labelEl.className='plan-section-title';labelEl.textContent=sec.label;secEl.appendChild(labelEl);}
-      const textEl=document.createElement('div');textEl.className=isTip?'plan-tip':'plan-section-text';textEl.textContent=sec.text;secEl.appendChild(textEl);
+      if(sec.label){
+        const head=document.createElement('div');head.className='plan-section-head';
+        const icon=document.createElement('span');icon.className='plan-section-icon';
+        icon.textContent=SECTION_ICONS[sec.label.toLowerCase()]||'📌';
+        const title=document.createElement('span');title.className='plan-section-title';title.textContent=sec.label;
+        head.appendChild(icon);head.appendChild(title);secEl.appendChild(head);
+      }
+      if(isTip){
+        const tipEl=document.createElement('div');tipEl.className='plan-tip';tipEl.textContent=sec.text.replace(/\[.*?\]\(.*?\)/g,'').trim();
+        secEl.appendChild(tipEl);
+      }else{
+        // Parse text for markdown links [text](url)
+        const textEl=document.createElement('div');textEl.className='plan-section-text';
+        const parts=sec.text.split(/(\[🗺️[^\]]*\]\([^)]+\)|\[🗺[^\]]*\]\([^)]+\))/g);
+        parts.forEach(part=>{
+          const linkMatch=part.match(/\[([^\]]+)\]\(([^)]+)\)/);
+          if(linkMatch){
+            const a=document.createElement('a');a.href=linkMatch[2];a.target='_blank';a.rel='noopener noreferrer';
+            a.className='plan-maps-link';a.innerHTML='🗺️ '+linkMatch[1].replace(/^🗺️?\s*/,'');
+            textEl.appendChild(document.createElement('br'));textEl.appendChild(a);
+          }else{
+            textEl.appendChild(document.createTextNode(part));
+          }
+        });
+        secEl.appendChild(textEl);
+      }
       body.appendChild(secEl);
-    }
+    });
     dayEl.appendChild(body);container.appendChild(dayEl);
-  }
-  if(dayBlocks.length===0&&introLines.length===0){const fb=document.createElement('div');fb.className='plan-intro';fb.textContent=text;container.appendChild(fb);}
-}
+  });
 
-/* ── GENERATE ── */
-async function generatePlan(){
-  goStep(5);
-  document.getElementById('loading-view').style.display='block';
-  document.getElementById('result-view').style.display='none';
-  const r=document.getElementById('sel-region').value||'open';
-  const c=document.getElementById('sel-country').value||'open';
-  const d=document.getElementById('sel-duration').value||'open';
-  const p=document.getElementById('sel-people').value||'open';
-  const s=getChips();
-  const b=document.getElementById('sel-budget').value||'open';
-  const a=document.getElementById('sel-accom').value||'open';
-  const t=document.getElementById('sel-transport').value||'open';
-  const w=document.getElementById('txt-wishes').value||'none';
-  const prompt=T[lang].promptFn(r,c,d,p,s,b,a,t,w);
-  try{
-    const res=await fetch('/api/plan',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({prompt})});
-    const data=await res.json();
-    document.getElementById('loading-view').style.display='none';
-    document.getElementById('result-view').style.display='block';
-    if(data.result){renderPlan(data.result);}
-    else{document.getElementById('result-plan').textContent=lang==='de'?'⚠️ Fehler. Bitte nochmals versuchen.':'⚠️ Error. Please try again.';}
-  }catch(e){
-    document.getElementById('loading-view').style.display='none';
-    document.getElementById('result-view').style.display='block';
-    document.getElementById('result-plan').textContent=lang==='de'?'⚠️ Verbindungsfehler.':'⚠️ Connection error.';
+  if(dayBlocks.length===0&&introLines.length===0){
+    const fb=document.createElement('div');fb.className='plan-intro';fb.textContent=text;container.appendChild(fb);
   }
 }
 
-/* ── PDF ── */
+/* ═══════════════════════════════════════════════
+   PDF EXPORT
+═══════════════════════════════════════════════ */
 function exportPDF(){
   const{jsPDF}=window.jspdf;
   const doc=new jsPDF({unit:'mm',format:'a4'});
   const pageW=doc.internal.pageSize.getWidth();const margin=20,maxW=pageW-margin*2;let y=20;
-  doc.setFillColor(196,96,42);doc.rect(0,0,pageW,18,'F');
+  doc.setFillColor(37,99,235);doc.rect(0,0,pageW,20,'F');
   doc.setTextColor(255,255,255);doc.setFont('helvetica','bold');doc.setFontSize(14);
-  doc.text('GAGglobetrotter – Travel Plan',margin,12);
-  doc.setTextColor(0,0,0);y=30;
-  const lines=rawPlanText.split('\n').map(l=>l.trim()).filter(l=>l);
-  const isDayLine=l=>/^TAG\s+\d+|^DAY\s+\d+/i.test(l);
-  const isSectionLine=l=>/^(Morgen|Mittag|Nachmittag|Abend|Tipp|Morning|Lunch|Afternoon|Evening|Tip):/i.test(l);
+  doc.text('GAGglobetrotter – Travel Plan',margin,13);
+  doc.setTextColor(0,0,0);y=32;
+  const cleanText=rawPlanText.replace(/\[([^\]]+)\]\([^)]+\)/g,'$1');
+  const lines=cleanText.split('\n').map(l=>l.trim()).filter(l=>l);
+  const isDayLine=l=>/^(DAY|TAG)\s+\d+/i.test(l);
+  const isSectionLine=l=>/^(Morning|Morgen|Lunch|Mittag|Afternoon|Nachmittag|Evening|Abend|Tip|Tipp):/i.test(l);
   for(const line of lines){
     if(y>270){doc.addPage();y=20;}
-    if(isDayLine(line)){y+=4;doc.setFillColor(196,96,42);doc.rect(margin,y-5,maxW,10,'F');doc.setTextColor(255,255,255);doc.setFont('helvetica','bold');doc.setFontSize(11);doc.text(line,margin+3,y+2);doc.setTextColor(0,0,0);y+=12;}
-    else if(isSectionLine(line)){const colon=line.indexOf(':');doc.setFont('helvetica','bold');doc.setFontSize(10);doc.setTextColor(196,96,42);doc.text(line.slice(0,colon)+':',margin,y);doc.setTextColor(0,0,0);doc.setFont('helvetica','normal');const wrapped=doc.splitTextToSize(line.slice(colon+1).trim(),maxW-30);doc.text(wrapped,margin+28,y);y+=wrapped.length*5+3;}
-    else{doc.setFont('helvetica','normal');doc.setFontSize(10);doc.setTextColor(60,60,60);const wrapped=doc.splitTextToSize(line,maxW);doc.text(wrapped,margin,y);y+=wrapped.length*5+2;doc.setTextColor(0,0,0);}
+    if(isDayLine(line)){
+      y+=4;doc.setFillColor(37,99,235);doc.rect(margin,y-5,maxW,10,'F');
+      doc.setTextColor(255,255,255);doc.setFont('helvetica','bold');doc.setFontSize(11);
+      doc.text(line,margin+3,y+2);doc.setTextColor(0,0,0);y+=14;
+    }else if(isSectionLine(line)){
+      const colon=line.indexOf(':');
+      doc.setFont('helvetica','bold');doc.setFontSize(10);doc.setTextColor(37,99,235);
+      doc.text(line.slice(0,colon)+':',margin,y);
+      doc.setTextColor(50,50,50);doc.setFont('helvetica','normal');
+      const wrapped=doc.splitTextToSize(line.slice(colon+1).trim(),maxW-32);
+      doc.text(wrapped,margin+32,y);y+=wrapped.length*5+4;
+    }else{
+      doc.setFont('helvetica','normal');doc.setFontSize(10);doc.setTextColor(80,80,80);
+      const wrapped=doc.splitTextToSize(line,maxW);
+      doc.text(wrapped,margin,y);y+=wrapped.length*5+2;doc.setTextColor(0,0,0);
+    }
   }
-  doc.setFontSize(8);doc.setTextColor(150,150,150);doc.text('Created by GAGglobetrotter',margin,290);
+  doc.setFontSize(8);doc.setTextColor(150,150,150);
+  doc.text('GAGglobetrotter · Powered by AI',margin,290);
   doc.save('TravelPlan-GAGglobetrotter.pdf');
 }
 
-/* ── EXCEL ── */
+/* ═══════════════════════════════════════════════
+   EXCEL EXPORT
+═══════════════════════════════════════════════ */
 function exportExcel(){
   const wb=XLSX.utils.book_new();const rows=[['GAGglobetrotter – Travel Plan'],['']];
-  const lines=rawPlanText.split('\n').map(l=>l.trim()).filter(l=>l);
-  const isDayLine=l=>/^TAG\s+\d+|^DAY\s+\d+/i.test(l);
-  const isSectionLine=l=>/^(Morgen|Mittag|Nachmittag|Abend|Tipp|Morning|Lunch|Afternoon|Evening|Tip):/i.test(l);
+  const cleanText=rawPlanText.replace(/\[([^\]]+)\]\([^)]+\)/g,'$1');
+  const lines=cleanText.split('\n').map(l=>l.trim()).filter(l=>l);
+  const isDayLine=l=>/^(DAY|TAG)\s+\d+/i.test(l);
+  const isSectionLine=l=>/^(Morning|Morgen|Lunch|Mittag|Afternoon|Nachmittag|Evening|Abend|Tip|Tipp):/i.test(l);
   for(const line of lines){
     if(isDayLine(line)){rows.push(['']);rows.push([line,'']);}
     else if(isSectionLine(line)){const colon=line.indexOf(':');rows.push([line.slice(0,colon),line.slice(colon+1).trim()]);}
     else{rows.push(['',line]);}
   }
-  const ws=XLSX.utils.aoa_to_sheet(rows);ws['!cols']=[{wch:18},{wch:80}];
+  const ws=XLSX.utils.aoa_to_sheet(rows);ws['!cols']=[{wch:16},{wch:85}];
   XLSX.utils.book_append_sheet(wb,ws,'Travel Plan');
   XLSX.writeFile(wb,'TravelPlan-GAGglobetrotter.xlsx');
 }
 
-/* ── RESET ── */
+/* ═══════════════════════════════════════════════
+   SHARE WITH TRAVEL BUDDY
+═══════════════════════════════════════════════ */
+function shareWithBuddy(){
+  // Generate PDF blob then open mailto
+  const{jsPDF}=window.jspdf;
+  const doc=new jsPDF({unit:'mm',format:'a4'});
+  const pageW=doc.internal.pageSize.getWidth();const margin=20,maxW=pageW-margin*2;let y=20;
+  doc.setFillColor(37,99,235);doc.rect(0,0,pageW,20,'F');
+  doc.setTextColor(255,255,255);doc.setFont('helvetica','bold');doc.setFontSize(14);
+  doc.text('GAGglobetrotter – Travel Plan',margin,13);
+  doc.setTextColor(0,0,0);y=32;
+  const cleanText=rawPlanText.replace(/\[([^\]]+)\]\([^)]+\)/g,'$1');
+  const lines=cleanText.split('\n').map(l=>l.trim()).filter(l=>l);
+  const isDayLine=l=>/^(DAY|TAG)\s+\d+/i.test(l);
+  const isSectionLine=l=>/^(Morning|Morgen|Lunch|Mittag|Afternoon|Nachmittag|Evening|Abend|Tip|Tipp):/i.test(l);
+  for(const line of lines){
+    if(y>270){doc.addPage();y=20;}
+    if(isDayLine(line)){y+=4;doc.setFillColor(37,99,235);doc.rect(margin,y-5,maxW,10,'F');doc.setTextColor(255,255,255);doc.setFont('helvetica','bold');doc.setFontSize(11);doc.text(line,margin+3,y+2);doc.setTextColor(0,0,0);y+=14;}
+    else if(isSectionLine(line)){const colon=line.indexOf(':');doc.setFont('helvetica','bold');doc.setFontSize(10);doc.setTextColor(37,99,235);doc.text(line.slice(0,colon)+':',margin,y);doc.setTextColor(50,50,50);doc.setFont('helvetica','normal');const wrapped=doc.splitTextToSize(line.slice(colon+1).trim(),maxW-32);doc.text(wrapped,margin+32,y);y+=wrapped.length*5+4;}
+    else{doc.setFont('helvetica','normal');doc.setFontSize(10);doc.setTextColor(80,80,80);const wrapped=doc.splitTextToSize(line,maxW);doc.text(wrapped,margin,y);y+=wrapped.length*5+2;doc.setTextColor(0,0,0);}
+  }
+  doc.save('TravelPlan-GAGglobetrotter.pdf');
+
+  const funnyMessages=[
+    "Okay so I may have spent the last 47 minutes planning our entire trip down to the exact restaurant where we'll cry happy tears. You're welcome. 🌍",
+    "I did ALL the hard work (okay I used AI, but still... I clicked SO many buttons). The PDF is attached. Don't say I never do anything for you. ✈️",
+    "Warning: This travel plan is so good it might cause spontaneous screaming, immediate credit card usage, and uncontrollable excitement. Open at your own risk. 🎉",
+    "I casually planned our dream vacation between breakfast and lunch. NBD. (It was actually AI but let's keep that between us 🤫). See attached!",
+    "Plot twist: I became a professional travel planner overnight. Attached is Exhibit A of my new career. Please still like me. 🙏"
+  ];
+  const msg=funnyMessages[Math.floor(Math.random()*funnyMessages.length)];
+  const subject=encodeURIComponent('✈️ I planned our trip – you NEED to see this');
+  const body=encodeURIComponent(`Hey! 👋\n\n${msg}\n\nI've just created our travel plan using GAGglobetrotter's AI planner. I've attached the PDF with all the details – restaurants, hotels, day-by-day activities and even Google Maps links for everything!\n\n📋 What's inside:\n• Full day-by-day itinerary\n• Restaurant & hotel recommendations\n• Local insider tips\n• Google Maps links for every spot\n\nSo... when are we going?! 🗓️\n\n(Don't forget to actually check the PDF – I promise it's worth it)\n\nCheers! 🥂\n\n—Sent via GAGglobetrotter`);
+  window.location.href=`mailto:?subject=${subject}&body=${body}`;
+}
+
+/* ═══════════════════════════════════════════════
+   RESET & MODALS
+═══════════════════════════════════════════════ */
 function resetAll(){
-  ['sel-region','sel-country','sel-duration','sel-people','sel-budget','sel-accom','sel-transport'].forEach(id=>document.getElementById(id).value='');
+  ['sel-region','sel-country','sel-city','sel-duration','sel-people','sel-budget','sel-accom','sel-transport'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
   document.getElementById('txt-wishes').value='';
-  document.querySelectorAll('.chip.selected').forEach(c=>c.classList.remove('selected'));
+  document.querySelectorAll('#chips-style .chip.selected').forEach(c=>c.classList.remove('selected'));
+  document.getElementById('fg-country').classList.add('field-hidden');
+  document.getElementById('fg-city').classList.add('field-hidden');
   document.getElementById('loading-view').style.display='block';
   document.getElementById('result-view').style.display='none';
   document.getElementById('result-plan').innerHTML='';
-  rawPlanText='';selectPlan('single');
+  document.getElementById('progress-fill').style.width='20%';
+  rawPlanText='';
 }
-
-/* ── MODALS ── */
 function openModal(id){document.getElementById('modal-'+id).classList.add('open');}
 function closeModal(id){document.getElementById('modal-'+id).classList.remove('open');}
 document.querySelectorAll('.modal-overlay').forEach(m=>{m.addEventListener('click',e=>{if(e.target===m)m.classList.remove('open');});});
-const observer=new IntersectionObserver(entries=>{entries.forEach(e=>{if(e.isIntersecting)e.target.classList.add('visible');});},{threshold:0.1});
-document.querySelectorAll('.reveal').forEach(el=>observer.observe(el));
+
+// Init
+setLang('en');
 </script>
 </body>
 </html>
