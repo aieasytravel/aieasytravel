@@ -693,6 +693,13 @@ let lang='en';
 let rawPlanText='';
 let destination={region:'',country:'',city:''};
 
+function getMaxDays(duration){
+  if(!duration||duration==='flexible') return null;
+  const nums=duration.match(/\d+/g);
+  if(!nums) return null;
+  return Math.max(...nums.map(Number));
+}
+
 const T={
   en:{
     eyebrow:'AI-Powered Travel Planning',
@@ -721,24 +728,7 @@ const T={
     btnPdf:'⬇ PDF',btnExcel:'⬇ Excel',btnShare:'✈️ Send to Travel Buddy',btnNew:'↩ New Plan',
     flImp:'Imprint',flAgb:'Terms',flPriv:'Privacy',footer:'Powered by AI',
     impTitle:'Imprint',agbTitle:'Terms & Conditions',privTitle:'Privacy Policy',
-    promptFn:(r,c,ci,d,p,s,b,a,t,w)=>{const maxDays=getMaxDays(d);const dayInstruction=maxDays?`IMPORTANT: You MUST create exactly ${maxDays} days. Do not stop early.`:'';return `You are an expert travel planner. Create a vivid, richly described, enthusiastic travel plan.
-Region: ${r} | Country: ${c||'flexible'} | City: ${ci||'flexible'} | Duration: ${d} | Travelers: ${p} | Style: ${s} | Budget: ${b} | Accommodation: ${a} | Transport: ${t} | Special requests: ${w}
-${dayInstruction}
-
-STRICT FORMATTING RULES:
-1. Start with 2-3 enthusiastic intro sentences about this destination. No headers, no labels.
-2. For EACH day use EXACTLY this format:
-DAY [N]: [Creative, evocative day title]
-Morning: Write 3-4 full vivid sentences describing the morning — what you see, smell, feel. Use emojis naturally. After each specific place name add a small maps link: PlaceName 🗺️ [Maps](https://maps.google.com/?q=PlaceName+City+Country)
-Lunch: Write 2-3 full sentences recommending a specific restaurant by name — describe the food, atmosphere, why it is special. Maps link after name: RestaurantName 🗺️ [Maps](https://maps.google.com/?q=RestaurantName+City+Country)
-Afternoon: Write 3-4 full vivid sentences. Same style as Morning with maps links after place names.
-Evening: Write 2-3 full sentences for dinner and evening. Restaurant name with maps link.
-Tip: One specific, genuinely useful insider tip in 1-2 sentences. 💡
-3. NO markdown symbols (* ** # ## --) at line starts
-4. The rich descriptive prose is the main content — maps links are small additions after place names, NOT the focus
-5. Be specific with real place names
-6. Language: English`;}}
-  },
+    promptFn:(r,c,ci,d,p,s,b,a,t,w)=>{const maxDays=getMaxDays(d);const dayInstruction=maxDays?`IMPORTANT: You MUST create exactly ${maxDays} days. Do not stop early.`:'';return `You are an expert travel planner. Create a vivid, richly described, enthusiastic travel plan.\nRegion: ${r} | Country: ${c||'flexible'} | City: ${ci||'flexible'} | Duration: ${d} | Travelers: ${p} | Style: ${s} | Budget: ${b} | Accommodation: ${a} | Transport: ${t} | Special requests: ${w}\n${dayInstruction}\n\nSTRICT FORMATTING RULES:\n1. Start with 2-3 enthusiastic intro sentences about this destination. No headers, no labels.\n2. For EACH day use EXACTLY this format:\nDAY [N]: [Creative, evocative day title]\nMorning: Write 3-4 full vivid sentences describing the morning — what you see, smell, feel. Use emojis naturally. After each specific place name add a small maps link: PlaceName 🗺️ [Maps](https://maps.google.com/?q=PlaceName+City+Country)\nLunch: Write 2-3 full sentences recommending a specific restaurant by name — describe the food, atmosphere, why it is special. Maps link after name: RestaurantName 🗺️ [Maps](https://maps.google.com/?q=RestaurantName+City+Country)\nAfternoon: Write 3-4 full vivid sentences. Same style as Morning with maps links after place names.\nEvening: Write 2-3 full sentences for dinner and evening. Restaurant name with maps link.\nTip: One specific, genuinely useful insider tip in 1-2 sentences. 💡\n3. NO markdown symbols (* ** # ## --) at line starts\n4. The rich descriptive prose is the main content — maps links are small additions after place names, NOT the focus\n5. Be specific with real place names\n6. Language: English`;}}
   de:{
     eyebrow:'KI-gestützter Reiseplaner',
     heroTitle:'Plane deinen Traumurlaub<br>in <span class="accent">60 Sekunden</span>',
@@ -935,15 +925,7 @@ function goStep(n){
   },50);
 }
 
-function getMaxDays(duration){
-  if(!duration||duration==='flexible') return null;
-  // Extract the highest number from strings like "8–14 days (2 weeks)"
-  const nums=duration.match(/\d+/g);
-  if(!nums) return null;
-  return Math.max(...nums.map(Number));
-}
-
-
+function getChips(){
   return [...document.querySelectorAll('#chips-style .chip.selected')].map(c=>c.textContent).join(', ')||'No preference';
 }
 
