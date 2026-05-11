@@ -4,12 +4,14 @@
     { "src": "api/plan.js", "use": "@vercel/node" },
     { "src": "api/plan-pet.js", "use": "@vercel/node" },
     { "src": "api/plan-spotify.js", "use": "@vercel/node" },
-    { "src": "index.html", "use": "@vercel/static" }
+    { "src": "index.html", "use": "@vercel/static" },
+    { "src": "success.html", "use": "@vercel/static" }
   ],
   "routes": [
     { "src": "/api/plan", "dest": "/api/plan.js" },
     { "src": "/api/plan-pet", "dest": "/api/plan-pet.js" },
     { "src": "/api/plan-spotify", "dest": "/api/plan-spotify.js" },
+    { "src": "/success", "dest": "/success.html" },
     { "src": "/(.*)", "dest": "/index.html" }
   ]
 }
