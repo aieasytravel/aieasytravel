@@ -663,7 +663,7 @@ const CITIES = {
   '🇬🇷 Greece':['Athens','Santorini','Mykonos','Crete','Rhodes'],
   '🇬🇷 Griechenland':['Athen','Santorin','Mykonos','Kreta','Rhodos'],
   '🇫🇷 France':['Paris','Nice','Lyon','Bordeaux','Provence','French Riviera'],
-  '🇫🇷 Frankreich':['Paris','Nizza','Lyon','Bordeaux','Provence','Côte d\'Azur'],
+  '🇫🇷 Frankreich':['Paris','Nizza','Lyon','Bordeaux','Provence',"Côte d'Azur"],
   '🇩🇪 Germany':['Berlin','Munich','Hamburg','Cologne','Frankfurt'],
   '🇩🇪 Deutschland':['Berlin','München','Hamburg','Köln','Frankfurt'],
   '🇨🇭 Switzerland':['Zurich','Geneva','Bern','Lucerne','Zermatt','Interlaken'],
@@ -728,7 +728,30 @@ const T={
     btnPdf:'⬇ PDF',btnExcel:'⬇ Excel',btnShare:'✈️ Send to Travel Buddy',btnNew:'↩ New Plan',
     flImp:'Imprint',flAgb:'Terms',flPriv:'Privacy',footer:'Powered by AI',
     impTitle:'Imprint',agbTitle:'Terms & Conditions',privTitle:'Privacy Policy',
-    promptFn:(r,c,ci,d,p,s,b,a,t,w)=>{const maxDays=getMaxDays(d);const dayInstruction=maxDays?`IMPORTANT: You MUST create exactly ${maxDays} days. Do not stop early.`:'';return `You are an expert travel planner. Create a vivid, richly described, enthusiastic travel plan.\nRegion: ${r} | Country: ${c||'flexible'} | City: ${ci||'flexible'} | Duration: ${d} | Travelers: ${p} | Style: ${s} | Budget: ${b} | Accommodation: ${a} | Transport: ${t} | Special requests: ${w}\n${dayInstruction}\n\nSTRICT FORMATTING RULES:\n1. Start with 2-3 enthusiastic intro sentences about this destination. No headers, no labels.\n2. For EACH day use EXACTLY this format:\nDAY [N]: [Creative, evocative day title]\nMorning: Write 3-4 full vivid sentences describing the morning — what you see, smell, feel. Use emojis naturally. After each specific place name add a small maps link: PlaceName 🗺️ [Maps](https://maps.google.com/?q=PlaceName+City+Country)\nLunch: Write 2-3 full sentences recommending a specific restaurant by name — describe the food, atmosphere, why it is special. Maps link after name: RestaurantName 🗺️ [Maps](https://maps.google.com/?q=RestaurantName+City+Country)\nAfternoon: Write 3-4 full vivid sentences. Same style as Morning with maps links after place names.\nEvening: Write 2-3 full sentences for dinner and evening. Restaurant name with maps link.\nTip: One specific, genuinely useful insider tip in 1-2 sentences. 💡\n3. NO markdown symbols (* ** # ## --) at line starts\n4. The rich descriptive prose is the main content — maps links are small additions after place names, NOT the focus\n5. Be specific with real place names\n6. Language: English`;}}
+    promptFn:function(r,c,ci,d,p,s,b,a,t,w){
+      var maxDays=getMaxDays(d);
+      var day=maxDays?'IMPORTANT: You MUST create exactly '+maxDays+' days. Do not stop early.':'';
+      var lines=[
+        'You are an expert travel planner. Create a vivid, richly described, enthusiastic travel plan.',
+        'Region: '+r+' | Country: '+(c||'flexible')+' | City: '+(ci||'flexible')+' | Duration: '+d+' | Travelers: '+p+' | Style: '+s+' | Budget: '+b+' | Accommodation: '+a+' | Transport: '+t+' | Special requests: '+w,
+        day,
+        '',
+        'STRICT FORMATTING RULES:',
+        '1. Start with 2-3 enthusiastic intro sentences. No headers, no labels.',
+        '2. For EACH day use EXACTLY this format:',
+        'DAY [N]: [Creative day title]',
+        'Morning: Write 3-4 vivid sentences. Use emojis. Add maps link after each place: PlaceName [Maps](https://maps.google.com/?q=PlaceName+City+Country)',
+        'Lunch: 2-3 sentences for a specific restaurant by name with maps link.',
+        'Afternoon: 3-4 vivid sentences with maps links after place names.',
+        'Evening: 2-3 sentences for dinner and evening with maps link.',
+        'Tip: One specific insider tip in 1-2 sentences.',
+        '3. NO markdown symbols (* ** # ## --) at line starts',
+        '4. Be specific with real place names',
+        '5. Language: English'
+      ];
+      return lines.join('\n');
+    }
+  },
   de:{
     eyebrow:'KI-gestützter Reiseplaner',
     heroTitle:'Plane deinen Traumurlaub<br>in <span class="accent">60 Sekunden</span>',
@@ -756,7 +779,29 @@ const T={
     btnPdf:'⬇ PDF',btnExcel:'⬇ Excel',btnShare:'✈️ Schick dem Travel Buddy',btnNew:'↩ Neu',
     flImp:'Impressum',flAgb:'AGB',flPriv:'Datenschutz',footer:'Powered by KI',
     impTitle:'Impressum',agbTitle:'Allgemeine Geschäftsbedingungen',privTitle:'Datenschutzerklärung',
-    promptFn:(r,c,ci,d,p,s,b,a,t,w)=>{const maxDays=getMaxDays(d);const dayInstruction=maxDays?`WICHTIG: Du MUSST genau ${maxDays} Tage erstellen. Hoere nicht fruehzeitig auf.`:'';return `Du bist ein erfahrener Reiseplaner. Erstelle einen lebendigen, ausfuehrlich beschriebenen, begeisternden Reiseplan.\nRegion: ${r} | Land: ${c||'flexibel'} | Stadt: ${ci||'flexibel'} | Dauer: ${d} | Reisende: ${p} | Stil: ${s} | Budget: ${b} | Unterkunft: ${a} | Transport: ${t} | Wuensche: ${w}\n${dayInstruction}\n\nFORMATIERUNGSREGELN:\n1. Beginne mit 2-3 begeisterten Einleitungsaetzen. Keine Ueberschriften, keine Labels.\n2. Fuer JEDEN Tag GENAU dieses Format:\nTAG [N]: [Kreativer Tagestitel]\nMorgen: Schreibe 3-4 vollstaendige, lebendige Saetze ueber das Morgenerlebnis - was man sieht, riecht, fuehlt. Emojis natuerlich verwenden. Nach jedem Ortsnamen einen kleinen Maps-Link: Ortsname 🗺️ [Maps](https://maps.google.com/?q=Ortsname+Stadt+Land)\nMittag: 2-3 vollstaendige Saetze fuer ein konkretes Restaurant mit Name - Essen, Atmosphaere, warum besonders. Maps-Link nach dem Namen: Restaurantname 🗺️ [Maps](https://maps.google.com/?q=Restaurantname+Stadt+Land)\nNachmittag: 3-4 vollstaendige, lebendige Saetze. Gleicher Stil wie Morgen mit Maps-Links nach Ortsnamen.\nAbend: 2-3 vollstaendige Saetze fuer Abendessen und Abendprogramm. Restaurant mit Maps-Link.\nTipp: Ein spezifischer, wirklich nuetzlicher Insider-Tipp in 1-2 Saetzen. 💡\n3. KEINE Markdown-Symbole (* ** # ##) am Zeilenanfang\n4. Die ausfuehrliche, beschreibende Prosa ist der Hauptinhalt - Maps-Links sind kleine Ergaenzungen nach Ortsnamen, NICHT der Fokus\n5. Echte, konkrete Ortsnamen verwenden\n6. Sprache: Deutsch`;}}
+    promptFn:function(r,c,ci,d,p,s,b,a,t,w){
+      var maxDays=getMaxDays(d);
+      var day=maxDays?'WICHTIG: Du MUSST genau '+maxDays+' Tage erstellen. Nicht fruehzeitig aufhoeren.':'';
+      var lines=[
+        'Du bist ein erfahrener Reiseplaner. Erstelle einen lebendigen, begeisternden Reiseplan.',
+        'Region: '+r+' | Land: '+(c||'flexibel')+' | Stadt: '+(ci||'flexibel')+' | Dauer: '+d+' | Reisende: '+p+' | Stil: '+s+' | Budget: '+b+' | Unterkunft: '+a+' | Transport: '+t+' | Wuensche: '+w,
+        day,
+        '',
+        'FORMATIERUNGSREGELN:',
+        '1. Beginne mit 2-3 begeisterten Einleitungsaetzen. Keine Ueberschriften.',
+        '2. Fuer JEDEN Tag GENAU dieses Format:',
+        'TAG [N]: [Kreativer Tagestitel]',
+        'Morgen: Schreibe 3-4 lebendige Saetze. Emojis verwenden. Maps-Link nach Ortsnamen: Ortsname [Maps](https://maps.google.com/?q=Ortsname+Stadt+Land)',
+        'Mittag: 2-3 Saetze fuer ein konkretes Restaurant mit Maps-Link.',
+        'Nachmittag: 3-4 lebendige Saetze mit Maps-Links.',
+        'Abend: 2-3 Saetze fuer Abendessen und Abendprogramm mit Maps-Link.',
+        'Tipp: Ein spezifischer Insider-Tipp in 1-2 Saetzen.',
+        '3. KEINE Markdown-Symbole (* ** # ##) am Zeilenanfang',
+        '4. Echte, konkrete Ortsnamen verwenden',
+        '5. Sprache: Deutsch'
+      ];
+      return lines.join('\n');
+    }
   }
 };
 
