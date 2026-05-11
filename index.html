@@ -721,8 +721,9 @@ const T={
     btnPdf:'⬇ PDF',btnExcel:'⬇ Excel',btnShare:'✈️ Send to Travel Buddy',btnNew:'↩ New Plan',
     flImp:'Imprint',flAgb:'Terms',flPriv:'Privacy',footer:'Powered by AI',
     impTitle:'Imprint',agbTitle:'Terms & Conditions',privTitle:'Privacy Policy',
-    promptFn:(r,c,ci,d,p,s,b,a,t,w)=>`You are an expert travel planner. Create a vivid, richly described, enthusiastic travel plan.
+    promptFn:(r,c,ci,d,p,s,b,a,t,w)=>{const maxDays=getMaxDays(d);const dayInstruction=maxDays?`IMPORTANT: You MUST create exactly ${maxDays} days. Do not stop early.`:'';return `You are an expert travel planner. Create a vivid, richly described, enthusiastic travel plan.
 Region: ${r} | Country: ${c||'flexible'} | City: ${ci||'flexible'} | Duration: ${d} | Travelers: ${p} | Style: ${s} | Budget: ${b} | Accommodation: ${a} | Transport: ${t} | Special requests: ${w}
+${dayInstruction}
 
 STRICT FORMATTING RULES:
 1. Start with 2-3 enthusiastic intro sentences about this destination. No headers, no labels.
@@ -736,7 +737,7 @@ Tip: One specific, genuinely useful insider tip in 1-2 sentences. 💡
 3. NO markdown symbols (* ** # ## --) at line starts
 4. The rich descriptive prose is the main content — maps links are small additions after place names, NOT the focus
 5. Be specific with real place names
-6. Language: English`
+6. Language: English`;}}
   },
   de:{
     eyebrow:'KI-gestützter Reiseplaner',
@@ -765,7 +766,7 @@ Tip: One specific, genuinely useful insider tip in 1-2 sentences. 💡
     btnPdf:'⬇ PDF',btnExcel:'⬇ Excel',btnShare:'✈️ Schick dem Travel Buddy',btnNew:'↩ Neu',
     flImp:'Impressum',flAgb:'AGB',flPriv:'Datenschutz',footer:'Powered by KI',
     impTitle:'Impressum',agbTitle:'Allgemeine Geschäftsbedingungen',privTitle:'Datenschutzerklärung',
-    promptFn:(r,c,ci,d,p,s,b,a,t,w)=>`Du bist ein erfahrener Reiseplaner. Erstelle einen lebendigen, ausfuehrlich beschriebenen, begeisternden Reiseplan.\nRegion: ${r} | Land: ${c||'flexibel'} | Stadt: ${ci||'flexibel'} | Dauer: ${d} | Reisende: ${p} | Stil: ${s} | Budget: ${b} | Unterkunft: ${a} | Transport: ${t} | Wuensche: ${w}\n\nFORMATIERUNGSREGELN:\n1. Beginne mit 2-3 begeisterten Einleitungsaetzen. Keine Ueberschriften, keine Labels.\n2. Fuer JEDEN Tag GENAU dieses Format:\nTAG [N]: [Kreativer Tagestitel]\nMorgen: Schreibe 3-4 vollstaendige, lebendige Saetze ueber das Morgenerlebnis - was man sieht, riecht, fuehlt. Emojis natuerlich verwenden. Nach jedem Ortsnamen einen kleinen Maps-Link: Ortsname 🗺️ [Maps](https://maps.google.com/?q=Ortsname+Stadt+Land)\nMittag: 2-3 vollstaendige Saetze fuer ein konkretes Restaurant mit Name - Essen, Atmosphaere, warum besonders. Maps-Link nach dem Namen: Restaurantname 🗺️ [Maps](https://maps.google.com/?q=Restaurantname+Stadt+Land)\nNachmittag: 3-4 vollstaendige, lebendige Saetze. Gleicher Stil wie Morgen mit Maps-Links nach Ortsnamen.\nAbend: 2-3 vollstaendige Saetze fuer Abendessen und Abendprogramm. Restaurant mit Maps-Link.\nTipp: Ein spezifischer, wirklich nuetzlicher Insider-Tipp in 1-2 Saetzen. 💡\n3. KEINE Markdown-Symbole (* ** # ##) am Zeilenanfang\n4. Die ausfuehrliche, beschreibende Prosa ist der Hauptinhalt - Maps-Links sind kleine Ergaenzungen nach Ortsnamen, NICHT der Fokus\n5. Echte, konkrete Ortsnamen verwenden\n6. Sprache: Deutsch`
+    promptFn:(r,c,ci,d,p,s,b,a,t,w)=>{const maxDays=getMaxDays(d);const dayInstruction=maxDays?`WICHTIG: Du MUSST genau ${maxDays} Tage erstellen. Hoere nicht fruehzeitig auf.`:'';return `Du bist ein erfahrener Reiseplaner. Erstelle einen lebendigen, ausfuehrlich beschriebenen, begeisternden Reiseplan.\nRegion: ${r} | Land: ${c||'flexibel'} | Stadt: ${ci||'flexibel'} | Dauer: ${d} | Reisende: ${p} | Stil: ${s} | Budget: ${b} | Unterkunft: ${a} | Transport: ${t} | Wuensche: ${w}\n${dayInstruction}\n\nFORMATIERUNGSREGELN:\n1. Beginne mit 2-3 begeisterten Einleitungsaetzen. Keine Ueberschriften, keine Labels.\n2. Fuer JEDEN Tag GENAU dieses Format:\nTAG [N]: [Kreativer Tagestitel]\nMorgen: Schreibe 3-4 vollstaendige, lebendige Saetze ueber das Morgenerlebnis - was man sieht, riecht, fuehlt. Emojis natuerlich verwenden. Nach jedem Ortsnamen einen kleinen Maps-Link: Ortsname 🗺️ [Maps](https://maps.google.com/?q=Ortsname+Stadt+Land)\nMittag: 2-3 vollstaendige Saetze fuer ein konkretes Restaurant mit Name - Essen, Atmosphaere, warum besonders. Maps-Link nach dem Namen: Restaurantname 🗺️ [Maps](https://maps.google.com/?q=Restaurantname+Stadt+Land)\nNachmittag: 3-4 vollstaendige, lebendige Saetze. Gleicher Stil wie Morgen mit Maps-Links nach Ortsnamen.\nAbend: 2-3 vollstaendige Saetze fuer Abendessen und Abendprogramm. Restaurant mit Maps-Link.\nTipp: Ein spezifischer, wirklich nuetzlicher Insider-Tipp in 1-2 Saetzen. 💡\n3. KEINE Markdown-Symbole (* ** # ##) am Zeilenanfang\n4. Die ausfuehrliche, beschreibende Prosa ist der Hauptinhalt - Maps-Links sind kleine Ergaenzungen nach Ortsnamen, NICHT der Fokus\n5. Echte, konkrete Ortsnamen verwenden\n6. Sprache: Deutsch`;}}
   }
 };
 
@@ -934,7 +935,15 @@ function goStep(n){
   },50);
 }
 
-function getChips(){
+function getMaxDays(duration){
+  if(!duration||duration==='flexible') return null;
+  // Extract the highest number from strings like "8–14 days (2 weeks)"
+  const nums=duration.match(/\d+/g);
+  if(!nums) return null;
+  return Math.max(...nums.map(Number));
+}
+
+
   return [...document.querySelectorAll('#chips-style .chip.selected')].map(c=>c.textContent).join(', ')||'No preference';
 }
 
@@ -962,7 +971,7 @@ function animateLoading(){
 // ─── TEST MODE FLAG ───────────────────────────
 // true  = skip Stripe, unlock plan directly (for testing)
 // false = real Stripe checkout
-const STRIPE_TEST_BYPASS = false;
+const STRIPE_TEST_BYPASS = true;
 // ─────────────────────────────────────────────
 
 const STRIPE_LIVE_URL = 'https://buy.stripe.com/28E14g9Ezb5M4N9fBy18c00';
@@ -970,15 +979,15 @@ const STRIPE_TEST_URL = 'https://buy.stripe.com/test_28E14g9Ezb5M4N9fBy18c00';
 
 function proceedToPayment(){
   if(STRIPE_TEST_BYPASS){
-    // Bypass: unlock directly without payment
     unlockFullPlan();
     return;
   }
-  // Save plan to sessionStorage so success page can retrieve it
+  // Save plan and a paid-token so the backend skips rate limit on full generation
   sessionStorage.setItem('gag_plan', rawPlanText);
   sessionStorage.setItem('gag_lang', lang);
+  sessionStorage.setItem('gag_paid_token', 'paid_' + Date.now());
   // Redirect to Stripe
-  window.location.href = STRIPE_TEST_URL;
+  window.location.href = STRIPE_LIVE_URL;
 }
 
 function unlockFullPlan(){
@@ -1019,7 +1028,7 @@ async function generatePlan(){
   const w=document.getElementById('txt-wishes').value||'none';
   const prompt=T[lang].promptFn(r,c,ci,d,p,s,b,a,t,w);
   try{
-    const res=await fetch('/api/plan',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({prompt})});
+    const res=await fetch('/api/plan',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({prompt, paidToken: sessionStorage.getItem('gag_paid_token')||null})});
     const data=await res.json();
     clearInterval(iv);
     document.getElementById('preview-loading').style.display='none';
@@ -1027,17 +1036,24 @@ async function generatePlan(){
       renderPreview(data.result);
       document.getElementById('preview-view').style.display='block';
     }else{
-      document.getElementById('preview-loading').innerHTML='<p style="color:red;padding:20px">⚠️ Error generating plan. Please try again.</p>';
+      showPreviewError(data);
     }
   }catch(e){
     clearInterval(iv);
-    document.getElementById('preview-loading').innerHTML='<p style="color:red;padding:20px">⚠️ Connection error. Please try again.</p>';
+    showPreviewError(null);
   }
 }
 
-/* ═══════════════════════════════════════════════
-   RENDER PREVIEW (intro + day 1 visible, rest blurred)
-═══════════════════════════════════════════════ */
+function showPreviewError(data){
+  const isRateLimit = data && data.error === 'rate_limit';
+  const msg = isRateLimit
+    ? (lang === 'de' ? data.message_de : data.message)
+    : (lang === 'de' ? 'Fehler beim Erstellen des Plans. Bitte versuche es erneut.' : 'Error generating plan. Please try again.');
+  const icon = isRateLimit ? '⏳' : '⚠️';
+  document.getElementById('preview-loading').innerHTML=`<p style="color:${isRateLimit?'var(--orange)':'red'};padding:32px 20px;text-align:center;font-size:14px;line-height:1.6">${icon} ${msg}</p>`;
+}
+
+
 function renderPreview(text){
   rawPlanText=text;
   const lines=text.split('\n').map(l=>l.trim()).filter(l=>l.length>0);
@@ -1483,18 +1499,16 @@ function processPetImage(file){
 
 async function generatePetPlan(){
   if(!petImageBase64){alert(lang==='de'?'Bitte lade zuerst ein Foto hoch!':'Please upload a photo first!');return;}
-  // Populate pet selects if not yet done
-  populateSelect('pet-sel-duration',T[lang].durations);
-  populateSelect('pet-sel-people',T[lang].peoples);
+
+  // Read values BEFORE populateSelect resets them
+  const dur=document.getElementById('pet-sel-duration').value||'flexible';
+  const ppl=document.getElementById('pet-sel-people').value||'flexible';
+  const wishes=document.getElementById('pet-txt-wishes').value||'none';
 
   goStep(4);
   document.getElementById('preview-loading').style.display='block';
   document.getElementById('preview-view').style.display='none';
   animatePreviewLoading();
-
-  const dur=document.getElementById('pet-sel-duration').value||'flexible';
-  const ppl=document.getElementById('pet-sel-people').value||'flexible';
-  const wishes=document.getElementById('pet-txt-wishes').value||'none';
 
   try{
     const res=await fetch('/api/plan-pet',{
@@ -1507,7 +1521,8 @@ async function generatePetPlan(){
         duration:dur,
         people:ppl,
         wishes:wishes,
-        lang:lang
+        lang:lang,
+        paidToken:sessionStorage.getItem('gag_paid_token')||null
       })
     });
     const data=await res.json();
@@ -1516,10 +1531,10 @@ async function generatePetPlan(){
       renderPreview(data.result);
       document.getElementById('preview-view').style.display='block';
     } else {
-      document.getElementById('preview-loading').innerHTML='<p style="color:red;padding:20px">⚠️ Error generating plan. Please try again.</p>';
+      showPreviewError(data);
     }
   } catch(e){
-    document.getElementById('preview-loading').innerHTML='<p style="color:red;padding:20px">⚠️ Connection error. Please try again.</p>';
+    showPreviewError(null);
   }
 }
 
@@ -1545,20 +1560,17 @@ function renderSpotifyTags(){
 
 async function generateSpotifyPlan(){
   if(spotifyTags.length<1){alert(lang==='de'?'Bitte füge mindestens einen Künstler oder Song hinzu!':'Please add at least one artist or song!');return;}
-  populateSelect('sp-sel-duration',T[lang].durations);
-  populateSelect('sp-sel-people',T[lang].peoples);
-  populateSelect('sp-sel-budget',T[lang].budgets);
-  populateSelect('sp-sel-accom',T[lang].accoms);
+
+  // Read values BEFORE populateSelect resets them
+  const dur=document.getElementById('sp-sel-duration').value||'flexible';
+  const ppl=document.getElementById('sp-sel-people').value||'flexible';
+  const budget=document.getElementById('sp-sel-budget').value||'flexible';
+  const accom=document.getElementById('sp-sel-accom').value||'flexible';
 
   goStep(4);
   document.getElementById('preview-loading').style.display='block';
   document.getElementById('preview-view').style.display='none';
   animatePreviewLoading();
-
-  const dur=document.getElementById('sp-sel-duration').value||'flexible';
-  const ppl=document.getElementById('sp-sel-people').value||'flexible';
-  const budget=document.getElementById('sp-sel-budget').value||'flexible';
-  const accom=document.getElementById('sp-sel-accom').value||'flexible';
 
   try{
     const res=await fetch('/api/plan-spotify',{
@@ -1570,7 +1582,8 @@ async function generateSpotifyPlan(){
         people:ppl,
         budget:budget,
         accommodation:accom,
-        lang:lang
+        lang:lang,
+        paidToken:sessionStorage.getItem('gag_paid_token')||null
       })
     });
     const data=await res.json();
@@ -1579,10 +1592,10 @@ async function generateSpotifyPlan(){
       renderPreview(data.result);
       document.getElementById('preview-view').style.display='block';
     } else {
-      document.getElementById('preview-loading').innerHTML='<p style="color:red;padding:20px">⚠️ Error generating plan. Please try again.</p>';
+      showPreviewError(data);
     }
   } catch(e){
-    document.getElementById('preview-loading').innerHTML='<p style="color:red;padding:20px">⚠️ Connection error. Please try again.</p>';
+    showPreviewError(null);
   }
 }
 
