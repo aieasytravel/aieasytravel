@@ -1395,6 +1395,8 @@ function selectMode(mode){
 /* ═══════════════════════════════════════════════
    PET FLOW
 ═══════════════════════════════════════════════ */
+let petImageType='image/jpeg';
+
 function handlePetFile(event){
   const file=event.target.files[0];
   if(file) processPetImage(file);
@@ -1408,11 +1410,23 @@ function handlePetDrop(event){
 function processPetImage(file){
   const reader=new FileReader();
   reader.onload=function(e){
-    petImageBase64=e.target.result.split(',')[1];
-    const img=document.getElementById('pet-preview-img');
-    img.src=e.target.result;
-    document.getElementById('pet-preview').style.display='block';
-    document.getElementById('pet-upload-area').style.display='none';
+    const tmpImg=new Image();
+    tmpImg.onload=function(){
+      // Compress: max 800px, quality 0.8
+      const canvas=document.createElement('canvas');
+      const MAX=800;
+      let w=tmpImg.width,h=tmpImg.height;
+      if(w>MAX||h>MAX){const r=Math.min(MAX/w,MAX/h);w=Math.round(w*r);h=Math.round(h*r);}
+      canvas.width=w;canvas.height=h;
+      canvas.getContext('2d').drawImage(tmpImg,0,0,w,h);
+      const compressed=canvas.toDataURL('image/jpeg',0.8);
+      petImageBase64=compressed.split(',')[1];
+      petImageType='image/jpeg';
+      document.getElementById('pet-preview-img').src=compressed;
+      document.getElementById('pet-preview').style.display='block';
+      document.getElementById('pet-upload-area').style.display='none';
+    };
+    tmpImg.src=e.target.result;
   };
   reader.readAsDataURL(file);
 }
@@ -1438,6 +1452,7 @@ async function generatePetPlan(){
       headers:{'Content-Type':'application/json'},
       body:JSON.stringify({
         imageBase64:petImageBase64,
+        imageType:petImageType,
         petName:document.getElementById('pet-name').value||'',
         duration:dur,
         people:ppl,
@@ -1524,12 +1539,16 @@ async function generateSpotifyPlan(){
 function animatePreviewLoading(){
   const psteps=['pls1','pls2','pls3','pls4'];
   let pi=0;
-  psteps.forEach(id=>document.getElementById(id).className='loading-step');
-  document.getElementById('pls1').className='loading-step active';
+  // Only animate if the elements exist (classic flow step 4)
+  const els=psteps.map(id=>document.getElementById(id));
+  if(!els[0]) return;
+  els.forEach(el=>{ if(el) el.className='loading-step'; });
+  els[0].className='loading-step active';
   const iv=setInterval(()=>{
     if(pi<psteps.length-1){
-      document.getElementById(psteps[pi]).className='loading-step done';
-      pi++;document.getElementById(psteps[pi]).className='loading-step active';
+      if(els[pi]) els[pi].className='loading-step done';
+      pi++;
+      if(els[pi]) els[pi].className='loading-step active';
     }else{clearInterval(iv);}
   },2500);
 }
