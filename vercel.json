@@ -2,10 +2,14 @@
   "version": 2,
   "builds": [
     { "src": "api/plan.js", "use": "@vercel/node" },
+    { "src": "api/plan-pet.js", "use": "@vercel/node" },
+    { "src": "api/plan-spotify.js", "use": "@vercel/node" },
     { "src": "index.html", "use": "@vercel/static" }
   ],
   "routes": [
     { "src": "/api/plan", "dest": "/api/plan.js" },
+    { "src": "/api/plan-pet", "dest": "/api/plan-pet.js" },
+    { "src": "/api/plan-spotify", "dest": "/api/plan-spotify.js" },
     { "src": "/(.*)", "dest": "/index.html" }
   ]
 }
