@@ -1,14 +1,24 @@
+export const config = {
+  api: {
+    bodyParser: {
+      sizeLimit: '10mb',
+    },
+  },
+};
+
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const { imageBase64, petName, duration, people, wishes, lang } = req.body;
+  const { imageBase64, imageType, petName, duration, people, wishes, lang } = req.body;
 
   if (!imageBase64) {
     return res.status(400).json({ error: 'No image provided' });
   }
 
+  // Accept explicit type from frontend, fallback to jpeg
+  const mediaType = imageType || 'image/jpeg';
   const isDE = lang === 'de';
 
   const systemPrompt = `You are an expert travel planner specialising in pet-friendly travel.
@@ -43,7 +53,7 @@ Use EXACTLY this format:
               type: 'image',
               source: {
                 type: 'base64',
-                media_type: 'image/jpeg',
+                media_type: mediaType,
                 data: imageBase64
               }
             },
@@ -56,6 +66,7 @@ Use EXACTLY this format:
     const data = await response.json();
 
     if (!response.ok) {
+      console.error('Anthropic API error:', JSON.stringify(data));
       return res.status(500).json({ error: 'API error', details: data });
     }
 
