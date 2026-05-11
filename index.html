@@ -958,13 +958,27 @@ function animateLoading(){
 /* ═══════════════════════════════════════════════
    PAYMENT
 ═══════════════════════════════════════════════ */
+
+// ─── TEST MODE FLAG ───────────────────────────
+// true  = skip Stripe, unlock plan directly (for testing)
+// false = real Stripe checkout
+const STRIPE_TEST_BYPASS = true;
+// ─────────────────────────────────────────────
+
+const STRIPE_LIVE_URL = 'https://buy.stripe.com/28E14g9Ezb5M4N9fBy18c00';
+const STRIPE_TEST_URL = 'https://buy.stripe.com/test_28E14g9Ezb5M4N9fBy18c00';
+
 function proceedToPayment(){
-  // STRIPE INTEGRATION: Replace this with your Stripe Payment Link:
-  // window.location.href = 'https://buy.stripe.com/YOUR_PAYMENT_LINK';
-  const msg=lang==='de'
-    ?'Stripe-Zahlung wird hier eingebunden.\n\nIn der Live-Version öffnet sich das Stripe-Checkout-Fenster.\n\nFür den Test: OK klicken um den vollen Plan freizuschalten.'
-    :'Stripe payment will be connected here.\n\nIn the live version, Stripe checkout opens.\n\nFor testing: Click OK to unlock the full plan.';
-  if(confirm(msg))unlockFullPlan();
+  if(STRIPE_TEST_BYPASS){
+    // Bypass: unlock directly without payment
+    unlockFullPlan();
+    return;
+  }
+  // Save plan to sessionStorage so success page can retrieve it
+  sessionStorage.setItem('gag_plan', rawPlanText);
+  sessionStorage.setItem('gag_lang', lang);
+  // Redirect to Stripe
+  window.location.href = STRIPE_LIVE_URL;
 }
 
 function unlockFullPlan(){
