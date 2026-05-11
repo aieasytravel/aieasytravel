@@ -1,3 +1,5 @@
+import { checkRateLimit, getClientIp } from './_rateLimit.js';
+
 export const config = {
   api: {
     bodyParser: {
@@ -9,6 +11,19 @@ export const config = {
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
+  }
+
+  // Rate limit check
+  const ip = getClientIp(req);
+  const paidToken = req.body?.paidToken || req.headers['x-paid-token'] || null;
+  const { allowed, remaining, retryAfterHours } = checkRateLimit(ip, paidToken);
+  if (!allowed) {
+    return res.status(429).json({
+      error: 'rate_limit',
+      message: `You've used all 3 free previews for today. Please try again in ${retryAfterHours} hour(s).`,
+      message_de: `Du hast heute alle 3 kostenlosen Vorschauen verbraucht. Bitte versuche es in ${retryAfterHours} Stunde(n) erneut.`,
+      retryAfterHours
+    });
   }
 
   const { imageBase64, imageType, petName, duration, people, wishes, lang } = req.body;
@@ -44,7 +59,7 @@ Use EXACTLY this format:
       },
       body: JSON.stringify({
         model: 'claude-sonnet-4-5',
-        max_tokens: 1500,
+        max_tokens: 8000,
         system: systemPrompt,
         messages: [{
           role: 'user',
