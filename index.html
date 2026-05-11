@@ -998,7 +998,7 @@ function animateLoading(){
 // ─── TEST MODE FLAG ───────────────────────────
 // true  = skip Stripe, unlock plan directly (for testing)
 // false = real Stripe checkout
-const STRIPE_TEST_BYPASS = true;
+const STRIPE_TEST_BYPASS = false;
 // ─────────────────────────────────────────────
 
 const STRIPE_LIVE_URL = 'https://buy.stripe.com/28E14g9Ezb5M4N9fBy18c00';
@@ -1014,7 +1014,7 @@ function proceedToPayment(){
   sessionStorage.setItem('gag_lang', lang);
   sessionStorage.setItem('gag_paid_token', 'paid_' + Date.now());
   // Redirect to Stripe
-  window.location.href = STRIPE_LIVE_URL;
+  window.location.href = STRIPE_TEST_URL;
 }
 
 function unlockFullPlan(){
