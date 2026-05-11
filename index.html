@@ -978,7 +978,7 @@ function proceedToPayment(){
   sessionStorage.setItem('gag_plan', rawPlanText);
   sessionStorage.setItem('gag_lang', lang);
   // Redirect to Stripe
-  window.location.href = STRIPE_LIVE_URL;
+  window.location.href = STRIPE_TEST_URL;
 }
 
 function unlockFullPlan(){
