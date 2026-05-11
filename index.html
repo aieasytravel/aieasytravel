@@ -166,6 +166,34 @@ main{padding:0 24px 80px;max-width:700px;margin:0 auto}
 .payment-divider{height:1px;background:var(--border);margin:16px 0}
 .payment-note{font-size:12px;color:var(--ink-light);display:flex;align-items:center;gap:6px;margin-top:12px}
 
+/* MODE SELECTOR */
+.mode-selector{display:flex;gap:14px;margin-bottom:0;padding:28px 32px 0;flex-wrap:wrap}
+.mode-card{flex:1;min-width:160px;border:2px solid var(--border);border-radius:var(--radius-sm);padding:18px 16px;cursor:pointer;transition:all 0.2s;background:var(--bg);text-align:center;user-select:none}
+.mode-card:hover{border-color:var(--blue);background:var(--blue-light)}
+.mode-card.selected{border-color:var(--blue);background:var(--blue-light);box-shadow:0 0 0 3px rgba(37,99,235,0.1)}
+.mode-card-icon{font-size:28px;margin-bottom:8px}
+.mode-card-title{font-size:13px;font-weight:700;color:var(--ink);margin-bottom:4px}
+.mode-card-desc{font-size:11px;color:var(--ink-mid);line-height:1.4}
+.mode-card.selected .mode-card-title{color:var(--blue)}
+
+/* PET UPLOAD */
+.pet-upload-area{border:2px dashed var(--border);border-radius:var(--radius-sm);padding:32px 24px;text-align:center;cursor:pointer;transition:all 0.2s;background:var(--bg);margin-bottom:16px}
+.pet-upload-area:hover,.pet-upload-area.dragover{border-color:var(--blue);background:var(--blue-light)}
+.pet-upload-icon{font-size:36px;margin-bottom:10px}
+.pet-upload-title{font-size:14px;font-weight:600;color:var(--ink);margin-bottom:4px}
+.pet-upload-sub{font-size:12px;color:var(--ink-mid)}
+.pet-preview{display:none;margin-bottom:16px;text-align:center}
+.pet-preview img{width:120px;height:120px;object-fit:cover;border-radius:50%;border:3px solid var(--blue);margin-bottom:8px}
+.pet-preview-name{font-size:13px;font-weight:600;color:var(--blue)}
+
+/* SPOTIFY */
+.spotify-input-wrap{background:var(--bg);border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:16px;margin-bottom:12px}
+.spotify-tag-wrap{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;min-height:32px}
+.spotify-tag{background:#1DB954;color:white;font-size:12px;font-weight:600;padding:4px 12px;border-radius:20px;display:flex;align-items:center;gap:6px}
+.spotify-tag-remove{cursor:pointer;opacity:0.7;font-size:14px;line-height:1}
+.spotify-tag-remove:hover{opacity:1}
+.spotify-help{font-size:12px;color:var(--ink-mid);margin-top:8px;line-height:1.5}
+
 /* FOOTER */
 footer{text-align:center;padding:32px 24px;border-top:1px solid var(--border);margin-top:60px}
 .footer-links{display:flex;gap:20px;justify-content:center;margin-bottom:12px;flex-wrap:wrap}
@@ -228,7 +256,32 @@ footer{text-align:center;padding:32px 24px;border-top:1px solid var(--border);ma
   <div class="planner-card">
     <div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width:20%"></div></div>
 
-    <!-- STEP 1 -->
+    <!-- MODE SELECTOR -->
+    <div id="mode-selector-wrap">
+      <div style="padding:28px 32px 16px">
+        <div style="font-size:11px;font-weight:600;color:var(--ink-light);letter-spacing:0.06em;text-transform:uppercase;margin-bottom:10px" id="mode-label">Choose your planning mode</div>
+        <div class="mode-selector" style="padding:0">
+          <div class="mode-card selected" id="mode-classic" onclick="selectMode('classic')">
+            <div class="mode-card-icon">🗺️</div>
+            <div class="mode-card-title" id="mode-classic-title">Classic</div>
+            <div class="mode-card-desc" id="mode-classic-desc">Tell us where & how you like to travel</div>
+          </div>
+          <div class="mode-card" id="mode-pet" onclick="selectMode('pet')">
+            <div class="mode-card-icon">🐾</div>
+            <div class="mode-card-title" id="mode-pet-title">Pet Planner</div>
+            <div class="mode-card-desc" id="mode-pet-desc">Upload a photo of your pet for a tailored trip</div>
+          </div>
+          <div class="mode-card" id="mode-spotify" onclick="selectMode('spotify')">
+            <div class="mode-card-icon">🎵</div>
+            <div class="mode-card-title" id="mode-spotify-title">Spotify Mood</div>
+            <div class="mode-card-desc" id="mode-spotify-desc">Enter your top songs and we'll map them to destinations</div>
+          </div>
+        </div>
+      </div>
+      <div style="height:1px;background:var(--border);margin:0 32px"></div>
+    </div>
+
+    <!-- STEP 1 (classic) -->
     <div class="step-panel active" id="step1">
       <div class="step-header">
         <div class="step-meta"><div class="step-num">1</div><span class="step-label" id="s1-label">Destination</span></div>
@@ -322,6 +375,91 @@ footer{text-align:center;padding:32px 24px;border-top:1px solid var(--border);ma
         <div class="btn-row">
           <button class="btn-back" onclick="goStep(2)" id="btn-back3">← Back</button>
           <button class="btn-primary" onclick="generatePlan()" id="btn-s3">Next →</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP PET-1: Upload -->
+    <div class="step-panel" id="step-pet1">
+      <div class="step-header">
+        <div class="step-meta"><div class="step-num">1</div><span class="step-label">Pet Photo</span></div>
+        <div class="step-title" id="pet1-title">Upload a photo of your pet 🐾</div>
+        <div class="step-desc" id="pet1-desc">Our AI will analyse your pet and suggest the perfect pet-friendly trip!</div>
+      </div>
+      <div class="step-body">
+        <div class="pet-upload-area" id="pet-upload-area" onclick="document.getElementById('pet-file-input').click()" ondragover="event.preventDefault();this.classList.add('dragover')" ondragleave="this.classList.remove('dragover')" ondrop="handlePetDrop(event)">
+          <div class="pet-upload-icon">📸</div>
+          <div class="pet-upload-title" id="pet-upload-title">Click to upload or drag & drop</div>
+          <div class="pet-upload-sub" id="pet-upload-sub">JPG, PNG, WEBP · Max 10MB</div>
+        </div>
+        <input type="file" id="pet-file-input" accept="image/*" style="display:none" onchange="handlePetFile(event)">
+        <div class="pet-preview" id="pet-preview">
+          <img id="pet-preview-img" src="" alt="Pet preview">
+          <div class="pet-preview-name" id="pet-preview-name">✓ Photo ready!</div>
+        </div>
+        <div class="field-group">
+          <label class="field-label" id="pet-name-label">Pet's name (optional)</label>
+          <input class="field-input" id="pet-name" type="text" placeholder="e.g. Max, Luna…">
+        </div>
+        <div class="fields-grid">
+          <div class="field-group">
+            <label class="field-label" id="pet-duration-label">Duration</label>
+            <select class="field-select" id="pet-sel-duration"><option value="">— Select —</option></select>
+          </div>
+          <div class="field-group">
+            <label class="field-label" id="pet-people-label">Travelers</label>
+            <select class="field-select" id="pet-sel-people"><option value="">— Select —</option></select>
+          </div>
+        </div>
+        <div class="field-group">
+          <label class="field-label" id="pet-wishes-label">Anything else? <span style="color:var(--ink-light);font-weight:400">(optional)</span></label>
+          <textarea class="field-textarea" id="pet-txt-wishes" placeholder="e.g. must be beach-friendly, no long flights…"></textarea>
+        </div>
+        <div class="btn-row">
+          <button class="btn-primary" onclick="generatePetPlan()" id="btn-pet-go">✨ Generate Pet Plan →</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP SPOTIFY-1: Enter songs -->
+    <div class="step-panel" id="step-spotify1">
+      <div class="step-header">
+        <div class="step-meta"><div class="step-num">1</div><span class="step-label">Spotify Mood</span></div>
+        <div class="step-title" id="sp1-title">Enter your top songs 🎵</div>
+        <div class="step-desc" id="sp1-desc">Type your favourite artists or songs (from Spotify Wrapped or just your current favourites) and we'll find your perfect destination.</div>
+      </div>
+      <div class="step-body">
+        <div class="spotify-input-wrap">
+          <label class="field-label">Artists / Songs</label>
+          <div style="display:flex;gap:8px">
+            <input class="field-input" id="spotify-entry" type="text" placeholder="e.g. Bad Bunny, Taylor Swift, Beyoncé…" onkeydown="if(event.key==='Enter'){addSpotifyTag();event.preventDefault()}">
+            <button class="btn-primary" style="padding:11px 18px;border-radius:8px;white-space:nowrap" onclick="addSpotifyTag()">+ Add</button>
+          </div>
+          <div class="spotify-tag-wrap" id="spotify-tags"></div>
+          <div class="spotify-help" id="spotify-help">💡 Add 3–10 artists or songs. Tip: open Spotify Wrapped and copy your top 5 artists here!</div>
+        </div>
+        <div class="fields-grid">
+          <div class="field-group">
+            <label class="field-label" id="sp-duration-label">Duration</label>
+            <select class="field-select" id="sp-sel-duration"><option value="">— Select —</option></select>
+          </div>
+          <div class="field-group">
+            <label class="field-label" id="sp-people-label">Travelers</label>
+            <select class="field-select" id="sp-sel-people"><option value="">— Select —</option></select>
+          </div>
+        </div>
+        <div class="fields-grid">
+          <div class="field-group">
+            <label class="field-label" id="sp-budget-label">Daily budget per person</label>
+            <select class="field-select" id="sp-sel-budget"><option value="">— Select —</option></select>
+          </div>
+          <div class="field-group">
+            <label class="field-label" id="sp-accom-label">Accommodation</label>
+            <select class="field-select" id="sp-sel-accom"><option value="">— Select —</option></select>
+          </div>
+        </div>
+        <div class="btn-row">
+          <button class="btn-primary" onclick="generateSpotifyPlan()" id="btn-sp-go">🎵 Find My Destination →</button>
         </div>
       </div>
     </div>
@@ -707,6 +845,37 @@ function setLang(l){
     document.getElementById('ubar-sub').textContent=lang==='de'?'Einmalige Zahlung · Kein Abo':'One-time payment · No subscription';
     document.getElementById('ubar-btn').textContent=lang==='de'?'✨ Vollständigen Plan freischalten – $7':'✨ Unlock Full Plan — $7';
   }
+  // Mode selector translations
+  document.getElementById('mode-label').textContent=lang==='de'?'Planungsmodus wählen':'Choose your planning mode';
+  document.getElementById('mode-classic-title').textContent=lang==='de'?'Klassisch':'Classic';
+  document.getElementById('mode-classic-desc').textContent=lang==='de'?'Sag uns wo & wie du reist':'Tell us where & how you like to travel';
+  document.getElementById('mode-pet-title').textContent=lang==='de'?'Tier-Planer':'Pet Planner';
+  document.getElementById('mode-pet-desc').textContent=lang==='de'?'Lade ein Foto deines Haustieres hoch':'Upload a photo of your pet for a tailored trip';
+  document.getElementById('mode-spotify-title').textContent=lang==='de'?'Spotify Mood':'Spotify Mood';
+  document.getElementById('mode-spotify-desc').textContent=lang==='de'?'Gib deine Top-Songs ein und wir finden dein Ziel':'Enter your top songs and we\'ll map them to destinations';
+  // Pet step translations
+  document.getElementById('pet1-title').textContent=lang==='de'?'Lade ein Foto deines Haustieres hoch 🐾':'Upload a photo of your pet 🐾';
+  document.getElementById('pet1-desc').textContent=lang==='de'?'Unsere KI analysiert dein Tier und schlägt die perfekte haustierfreundliche Reise vor!':'Our AI will analyse your pet and suggest the perfect pet-friendly trip!';
+  document.getElementById('pet-upload-title').textContent=lang==='de'?'Klicken oder Bild hierher ziehen':'Click to upload or drag & drop';
+  document.getElementById('pet-upload-sub').textContent=lang==='de'?'JPG, PNG, WEBP · Max 10MB':'JPG, PNG, WEBP · Max 10MB';
+  document.getElementById('pet-name-label').textContent=lang==='de'?'Name des Haustieres (optional)':'Pet\'s name (optional)';
+  document.getElementById('pet-duration-label').textContent=t.lDuration;
+  document.getElementById('pet-people-label').textContent=t.lPeople;
+  document.getElementById('pet-wishes-label').innerHTML=lang==='de'?'Sonst noch etwas? <span style="color:var(--ink-light);font-weight:400">(optional)</span>':'Anything else? <span style="color:var(--ink-light);font-weight:400">(optional)</span>';
+  document.getElementById('btn-pet-go').textContent=lang==='de'?'✨ Tier-Reiseplan erstellen →':'✨ Generate Pet Plan →';
+  // Spotify step translations
+  document.getElementById('sp1-title').textContent=lang==='de'?'Gib deine Top-Songs ein 🎵':'Enter your top songs 🎵';
+  document.getElementById('sp1-desc').textContent=lang==='de'?'Tippe deine Lieblingskünstler oder Songs ein (aus Spotify Wrapped oder deinen aktuellen Favoriten) und wir finden dein perfektes Reiseziel.':'Type your favourite artists or songs (from Spotify Wrapped or just your current favourites) and we\'ll find your perfect destination.';
+  document.getElementById('spotify-help').textContent=lang==='de'?'💡 Füge 3–10 Künstler oder Songs hinzu. Tipp: Öffne Spotify Wrapped und kopiere deine Top 5 Künstler!':'💡 Add 3–10 artists or songs. Tip: open Spotify Wrapped and copy your top 5 artists here!';
+  document.getElementById('sp-duration-label').textContent=t.lDuration;
+  document.getElementById('sp-people-label').textContent=t.lPeople;
+  document.getElementById('sp-budget-label').textContent=t.lBudget;
+  document.getElementById('sp-accom-label').textContent=t.lAccom;
+  document.getElementById('btn-sp-go').textContent=lang==='de'?'🎵 Mein Ziel finden →':'🎵 Find My Destination →';
+  // Always keep pet/spotify selects in sync
+  populateSelect('pet-sel-duration',t.durations);populateSelect('pet-sel-people',t.peoples);
+  populateSelect('sp-sel-duration',t.durations);populateSelect('sp-sel-people',t.peoples);
+  populateSelect('sp-sel-budget',t.budgets);populateSelect('sp-sel-accom',t.accoms);
 }
 
 function populateSelect(id,opts){
@@ -763,7 +932,9 @@ function onCountryChange(){
 let currentStep=1;
 const TOTAL_STEPS=6;
 function goStep(n){
-  document.getElementById('step'+currentStep).classList.remove('active');
+  const curId='step'+(typeof currentStep==='number'?currentStep:currentStep);
+  const curEl=document.getElementById(curId);
+  if(curEl) curEl.classList.remove('active');
   document.getElementById('step'+n).classList.add('active');
   document.getElementById('progress-fill').style.width=((n/TOTAL_STEPS)*100)+'%';
   currentStep=n;
@@ -1185,8 +1356,185 @@ function shareWithBuddy(){
 }
 
 /* ═══════════════════════════════════════════════
-   RESET & MODALS
+   MODE SELECTOR
 ═══════════════════════════════════════════════ */
+let currentMode='classic'; // 'classic' | 'pet' | 'spotify'
+let petImageBase64=null;
+let spotifyTags=[];
+
+function selectMode(mode){
+  currentMode=mode;
+  ['classic','pet','spotify'].forEach(m=>{
+    document.getElementById('mode-'+m).classList.toggle('selected',m===mode);
+  });
+  // Reset to appropriate step 1
+  document.querySelectorAll('.step-panel').forEach(p=>p.classList.remove('active'));
+  if(mode==='classic'){
+    document.getElementById('step1').classList.add('active');
+    document.getElementById('progress-fill').style.width='20%';
+    currentStep=1;
+  } else if(mode==='pet'){
+    document.getElementById('step-pet1').classList.add('active');
+    document.getElementById('progress-fill').style.width='20%';
+    currentStep='pet1';
+  } else if(mode==='spotify'){
+    document.getElementById('step-spotify1').classList.add('active');
+    document.getElementById('progress-fill').style.width='20%';
+    currentStep='sp1';
+    // Populate spotify selects
+    populateSelect('sp-sel-duration',T[lang].durations);
+    populateSelect('sp-sel-people',T[lang].peoples);
+    populateSelect('sp-sel-budget',T[lang].budgets);
+    populateSelect('sp-sel-accom',T[lang].accoms);
+    // Populate pet selects too
+    populateSelect('pet-sel-duration',T[lang].durations);
+    populateSelect('pet-sel-people',T[lang].peoples);
+  }
+}
+
+/* ═══════════════════════════════════════════════
+   PET FLOW
+═══════════════════════════════════════════════ */
+function handlePetFile(event){
+  const file=event.target.files[0];
+  if(file) processPetImage(file);
+}
+function handlePetDrop(event){
+  event.preventDefault();
+  document.getElementById('pet-upload-area').classList.remove('dragover');
+  const file=event.dataTransfer.files[0];
+  if(file && file.type.startsWith('image/')) processPetImage(file);
+}
+function processPetImage(file){
+  const reader=new FileReader();
+  reader.onload=function(e){
+    petImageBase64=e.target.result.split(',')[1];
+    const img=document.getElementById('pet-preview-img');
+    img.src=e.target.result;
+    document.getElementById('pet-preview').style.display='block';
+    document.getElementById('pet-upload-area').style.display='none';
+  };
+  reader.readAsDataURL(file);
+}
+
+async function generatePetPlan(){
+  if(!petImageBase64){alert(lang==='de'?'Bitte lade zuerst ein Foto hoch!':'Please upload a photo first!');return;}
+  // Populate pet selects if not yet done
+  populateSelect('pet-sel-duration',T[lang].durations);
+  populateSelect('pet-sel-people',T[lang].peoples);
+
+  goStep(4);
+  document.getElementById('preview-loading').style.display='block';
+  document.getElementById('preview-view').style.display='none';
+  animatePreviewLoading();
+
+  const dur=document.getElementById('pet-sel-duration').value||'flexible';
+  const ppl=document.getElementById('pet-sel-people').value||'flexible';
+  const wishes=document.getElementById('pet-txt-wishes').value||'none';
+
+  try{
+    const res=await fetch('/api/plan-pet',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        imageBase64:petImageBase64,
+        petName:document.getElementById('pet-name').value||'',
+        duration:dur,
+        people:ppl,
+        wishes:wishes,
+        lang:lang
+      })
+    });
+    const data=await res.json();
+    document.getElementById('preview-loading').style.display='none';
+    if(data.result){
+      renderPreview(data.result);
+      document.getElementById('preview-view').style.display='block';
+    } else {
+      document.getElementById('preview-loading').innerHTML='<p style="color:red;padding:20px">⚠️ Error generating plan. Please try again.</p>';
+    }
+  } catch(e){
+    document.getElementById('preview-loading').innerHTML='<p style="color:red;padding:20px">⚠️ Connection error. Please try again.</p>';
+  }
+}
+
+/* ═══════════════════════════════════════════════
+   SPOTIFY FLOW
+═══════════════════════════════════════════════ */
+function addSpotifyTag(){
+  const input=document.getElementById('spotify-entry');
+  const val=input.value.trim();
+  if(!val||spotifyTags.includes(val)) {input.value='';return;}
+  spotifyTags.push(val);
+  renderSpotifyTags();
+  input.value='';
+}
+function removeSpotifyTag(idx){
+  spotifyTags.splice(idx,1);
+  renderSpotifyTags();
+}
+function renderSpotifyTags(){
+  const wrap=document.getElementById('spotify-tags');
+  wrap.innerHTML=spotifyTags.map((t,i)=>`<div class="spotify-tag">${t}<span class="spotify-tag-remove" onclick="removeSpotifyTag(${i})">✕</span></div>`).join('');
+}
+
+async function generateSpotifyPlan(){
+  if(spotifyTags.length<1){alert(lang==='de'?'Bitte füge mindestens einen Künstler oder Song hinzu!':'Please add at least one artist or song!');return;}
+  populateSelect('sp-sel-duration',T[lang].durations);
+  populateSelect('sp-sel-people',T[lang].peoples);
+  populateSelect('sp-sel-budget',T[lang].budgets);
+  populateSelect('sp-sel-accom',T[lang].accoms);
+
+  goStep(4);
+  document.getElementById('preview-loading').style.display='block';
+  document.getElementById('preview-view').style.display='none';
+  animatePreviewLoading();
+
+  const dur=document.getElementById('sp-sel-duration').value||'flexible';
+  const ppl=document.getElementById('sp-sel-people').value||'flexible';
+  const budget=document.getElementById('sp-sel-budget').value||'flexible';
+  const accom=document.getElementById('sp-sel-accom').value||'flexible';
+
+  try{
+    const res=await fetch('/api/plan-spotify',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        songs:spotifyTags,
+        duration:dur,
+        people:ppl,
+        budget:budget,
+        accommodation:accom,
+        lang:lang
+      })
+    });
+    const data=await res.json();
+    document.getElementById('preview-loading').style.display='none';
+    if(data.result){
+      renderPreview(data.result);
+      document.getElementById('preview-view').style.display='block';
+    } else {
+      document.getElementById('preview-loading').innerHTML='<p style="color:red;padding:20px">⚠️ Error generating plan. Please try again.</p>';
+    }
+  } catch(e){
+    document.getElementById('preview-loading').innerHTML='<p style="color:red;padding:20px">⚠️ Connection error. Please try again.</p>';
+  }
+}
+
+function animatePreviewLoading(){
+  const psteps=['pls1','pls2','pls3','pls4'];
+  let pi=0;
+  psteps.forEach(id=>document.getElementById(id).className='loading-step');
+  document.getElementById('pls1').className='loading-step active';
+  const iv=setInterval(()=>{
+    if(pi<psteps.length-1){
+      document.getElementById(psteps[pi]).className='loading-step done';
+      pi++;document.getElementById(psteps[pi]).className='loading-step active';
+    }else{clearInterval(iv);}
+  },2500);
+}
+
+
 function confirmNewPlan(){
   var msg=lang==="de"
     ?"Moechtest du wirklich einen neuen Plan starten? Dein aktueller Reiseplan geht dabei verloren."
@@ -1194,11 +1542,27 @@ function confirmNewPlan(){
   if(confirm(msg)){goStep(1);resetAll();}
 }
 function resetAll(){
+  currentMode='classic';
+  petImageBase64=null;
+  spotifyTags=[];
+  ['classic','pet','spotify'].forEach(m=>{
+    document.getElementById('mode-'+m).classList.toggle('selected',m==='classic');
+  });
   ['sel-region','sel-country','sel-city','sel-duration','sel-people','sel-budget','sel-accom','sel-transport'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
   document.getElementById('txt-wishes').value='';
   document.querySelectorAll('#chips-style .chip.selected').forEach(c=>c.classList.remove('selected'));
   document.getElementById('fg-country').classList.add('field-hidden');
   document.getElementById('fg-city').classList.add('field-hidden');
+  // Reset pet
+  document.getElementById('pet-name').value='';
+  document.getElementById('pet-txt-wishes').value='';
+  document.getElementById('pet-preview').style.display='none';
+  document.getElementById('pet-upload-area').style.display='block';
+  document.getElementById('pet-file-input').value='';
+  // Reset spotify
+  document.getElementById('spotify-tags').innerHTML='';
+  document.getElementById('spotify-entry').value='';
+  // Reset result
   document.getElementById('loading-view').style.display='block';
   document.getElementById('result-view').style.display='none';
   document.getElementById('result-plan').innerHTML='';
