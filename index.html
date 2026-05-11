@@ -141,14 +141,7 @@ main{padding:0 24px 80px;max-width:700px;margin:0 auto}
 .paywall-price{font-size:11px;color:var(--ink-light);margin-top:8px}
 .paywall-btn{background:var(--blue);color:white;border:none;padding:14px 32px;font-family:'Inter',sans-serif;font-size:15px;font-weight:600;cursor:pointer;border-radius:50px;transition:all 0.2s;box-shadow:0 4px 14px rgba(37,99,235,0.35);width:100%;max-width:320px}
 .paywall-btn:hover{background:var(--blue-dark);transform:translateY(-2px)}
-/* Sticky unlock bar – fixed to bottom of viewport, always visible while on step 4 */
-.unlock-bar{display:none;position:fixed;bottom:0;left:0;right:0;background:white;border-top:2px solid var(--blue);padding:14px 24px;text-align:center;box-shadow:0 -4px 24px rgba(15,23,42,0.12);z-index:100}
-.unlock-bar.visible{display:block}
-.unlock-bar-inner{max-width:700px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
-.unlock-bar-text{font-size:14px;font-weight:600;color:var(--ink);text-align:left}
-.unlock-bar-sub{font-size:12px;color:var(--ink-mid);font-weight:400}
-.unlock-bar-btn{background:var(--blue);color:white;border:none;padding:12px 28px;font-family:'Inter',sans-serif;font-size:14px;font-weight:600;cursor:pointer;border-radius:50px;transition:all 0.2s;box-shadow:0 3px 10px rgba(37,99,235,0.3);white-space:nowrap;flex-shrink:0}
-.unlock-bar-btn:hover{background:var(--blue-dark);transform:translateY(-1px)}
+
 .plan-maps-link{display:inline-flex;align-items:center;gap:4px;font-size:12px;color:var(--blue);text-decoration:none;font-weight:500;margin-top:6px;padding-left:30px;transition:opacity 0.2s}
 .plan-maps-link:hover{opacity:0.7;text-decoration:underline}
 .plan-maps-icon{font-size:12px}
@@ -841,11 +834,6 @@ function setLang(l){
     document.getElementById('paywall-btn').textContent=lang==='de'?'✨ Vollständigen Plan freischalten – $7':'✨ Unlock Full Plan — $7';
     document.getElementById('paywall-price').textContent=lang==='de'?'Einmalige Zahlung · Kein Abo · Sofortiger Zugang':'One-time payment · No subscription · Instant access';
   }
-  if(document.getElementById('ubar-title')){
-    document.getElementById('ubar-title').textContent=lang==='de'?'🔒 Dein Plan ist bereit zum Freischalten':'🔒 Your plan is ready to unlock';
-    document.getElementById('ubar-sub').textContent=lang==='de'?'Einmalige Zahlung · Kein Abo':'One-time payment · No subscription';
-    document.getElementById('ubar-btn').textContent=lang==='de'?'✨ Vollständigen Plan freischalten – $7':'✨ Unlock Full Plan — $7';
-  }
   // Mode selector translations
   document.getElementById('mode-label').textContent=lang==='de'?'Planungsmodus wählen':'Choose your planning mode';
   document.getElementById('mode-classic-title').textContent=lang==='de'?'Klassisch':'Classic';
@@ -940,9 +928,6 @@ function goStep(n){
   document.getElementById('progress-fill').style.width=((n/TOTAL_STEPS)*100)+'%';
   currentStep=n;
   document.getElementById('planner').scrollIntoView({behavior:'smooth',block:'start'});
-  // Show sticky unlock bar only on step 4 (preview)
-  const bar=document.getElementById('unlock-bar');
-  if(bar) bar.classList.toggle('visible', n===4);
 }
 
 function getChips(){
@@ -1414,8 +1399,6 @@ function selectMode(mode){
   resetSpotifyFlow();
   // Also reset preview/result state
   rawPlanText='';
-  const bar=document.getElementById('unlock-bar');
-  if(bar) bar.classList.remove('visible');
   document.querySelectorAll('.step-panel').forEach(p=>p.classList.remove('active'));
   document.getElementById('progress-fill').style.width='20%';
   if(mode==='classic'){
@@ -1643,16 +1626,7 @@ document.querySelectorAll('.modal-overlay').forEach(m=>{m.addEventListener('clic
 // Init
 setLang('en');
 </script>
-<!-- Sticky unlock bar – shown while user is on step 4 preview -->
-<div class="unlock-bar" id="unlock-bar">
-  <div class="unlock-bar-inner">
-    <div>
-      <div class="unlock-bar-text" id="ubar-title">🔒 Your plan is ready to unlock</div>
-      <div class="unlock-bar-sub" id="ubar-sub">One-time payment · No subscription</div>
-    </div>
-    <button class="unlock-bar-btn" onclick="goStep(5)" id="ubar-btn">✨ Unlock Full Plan — $7</button>
-  </div>
-</div>
+
 
 </body>
 </html>
