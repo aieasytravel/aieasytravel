@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GAGglobetrotter – Your Travel Plan is Ready!</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+:root{
+  --blue:#2563EB;--blue-dark:#1D4ED8;--blue-light:#EFF6FF;
+  --ink:#0F172A;--ink-mid:#475569;--ink-light:#94A3B8;
+  --border:#E2E8F0;--bg:#F8FAFC;--white:#FFFFFF;
+  --green:#10B981;--orange:#F59E0B;--red:#EF4444;
+  --shadow-sm:0 1px 3px rgba(0,0,0,0.08);
+  --shadow:0 4px 16px rgba(0,0,0,0.08);
+  --shadow-lg:0 12px 40px rgba(0,0,0,0.10);
+  --radius:14px;--radius-sm:8px;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--ink);min-height:100vh;-webkit-font-smoothing:antialiased}
+
+nav{position:fixed;top:0;left:0;right:0;z-index:200;background:rgba(255,255,255,0.9);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:0 32px;height:60px;display:flex;align-items:center;justify-content:space-between}
+.nav-logo{font-size:17px;font-weight:700;color:var(--ink);letter-spacing:-0.3px}
+.nav-logo span{color:var(--blue)}
+
+.success-banner{background:linear-gradient(135deg,#10B981,#059669);color:white;text-align:center;padding:80px 24px 40px;margin-top:60px}
+.success-icon{font-size:48px;margin-bottom:16px}
+.success-title{font-size:28px;font-weight:800;letter-spacing:-0.5px;margin-bottom:8px}
+.success-sub{font-size:15px;opacity:0.9;font-weight:400}
+
+main{max-width:700px;margin:0 auto;padding:32px 24px 80px}
+
+.result-card{background:white;border-radius:var(--radius);border:1px solid var(--border);box-shadow:var(--shadow-lg);overflow:hidden}
+.result-actions{display:flex;gap:8px;flex-wrap:wrap;padding:20px 24px;border-bottom:1px solid var(--border)}
+
+.btn-ghost{background:none;border:1.5px solid var(--border);color:var(--ink-mid);padding:10px 18px;font-family:'Inter',sans-serif;font-size:13px;font-weight:500;cursor:pointer;border-radius:50px;transition:all 0.2s;display:flex;align-items:center;gap:6px}
+.btn-ghost:hover{border-color:var(--blue);color:var(--blue)}
+.btn-share{background:linear-gradient(135deg,#7C3AED,#EC4899);color:white;border:none;padding:10px 18px;font-family:'Inter',sans-serif;font-size:13px;font-weight:600;cursor:pointer;border-radius:50px;display:flex;align-items:center;gap:6px}
+.btn-share:hover{opacity:0.9}
+.btn-new{background:none;border:none;font-family:'Inter',sans-serif;font-size:13px;color:var(--ink-light);cursor:pointer;padding:10px 4px;font-weight:500}
+.btn-new:hover{color:var(--ink)}
+
+.result-wrap{padding:24px}
+.plan-intro{font-size:15px;line-height:1.75;color:var(--ink-mid);margin-bottom:20px;padding:18px 20px;background:var(--blue-light);border-radius:var(--radius-sm);border-left:3px solid var(--blue)}
+.plan-day{margin-bottom:16px;border:1.5px solid var(--border);border-radius:var(--radius-sm);overflow:hidden}
+.plan-day:hover{box-shadow:var(--shadow)}
+.plan-day-header{background:var(--ink);color:white;padding:12px 18px;font-size:14px;font-weight:700;display:flex;align-items:center;gap:10px}
+.plan-day-num{background:var(--blue);color:white;font-size:11px;font-weight:700;padding:2px 8px;border-radius:10px}
+.plan-day-body{background:white}
+.plan-section{padding:14px 18px;border-bottom:1px solid var(--bg)}
+.plan-section:last-child{border-bottom:none}
+.plan-section-head{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.plan-section-icon{font-size:14px;width:22px;text-align:center}
+.plan-section-title{font-size:11px;font-weight:700;color:var(--ink-mid);letter-spacing:0.06em;text-transform:uppercase}
+.plan-section-text{font-size:14px;line-height:1.7;color:var(--ink);padding-left:30px}
+.plan-tip{background:#FFFBEB;border-left:3px solid var(--orange);padding:12px 16px;font-size:13px;color:#92400E;line-height:1.6;font-style:italic;border-radius:0 4px 4px 0}
+.plan-maps-link{display:inline-flex;align-items:center;gap:4px;font-size:12px;color:var(--blue);text-decoration:none;font-weight:500;margin-top:6px;padding-left:30px}
+.plan-maps-link:hover{opacity:0.7;text-decoration:underline}
+
+.no-plan{text-align:center;padding:60px 24px;color:var(--ink-mid)}
+.no-plan-icon{font-size:40px;margin-bottom:16px}
+.no-plan-title{font-size:18px;font-weight:700;color:var(--ink);margin-bottom:8px}
+.no-plan-sub{font-size:14px;margin-bottom:24px}
+.btn-primary{background:var(--blue);color:white;border:none;padding:14px 28px;font-family:'Inter',sans-serif;font-size:14px;font-weight:600;cursor:pointer;border-radius:50px;transition:all 0.2s;box-shadow:0 4px 12px rgba(37,99,235,0.3)}
+.btn-primary:hover{background:var(--blue-dark);transform:translateY(-1px)}
+
+footer{text-align:center;padding:32px 24px;border-top:1px solid var(--border)}
+.footer-copy{font-size:12px;color:var(--ink-light)}
+
+@media(max-width:600px){
+  nav{padding:0 16px}
+  .success-banner{padding:80px 16px 32px}
+  .result-actions{padding:14px 16px}
+  .result-wrap{padding:16px}
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-logo">GAG<span>globetrotter</span></div>
+  <button class="btn-new" onclick="window.location.href='/'">↩ New Plan</button>
+</nav>
+
+<div class="success-banner">
+  <div class="success-icon">🎉</div>
+  <div class="success-title">Payment successful — your plan is ready!</div>
+  <div class="success-sub">Thank you for your purchase. Here's your complete travel plan.</div>
+</div>
+
+<main>
+  <div class="result-card">
+    <div class="result-actions">
+      <button class="btn-ghost" onclick="exportPDF()">⬇ PDF</button>
+      <button class="btn-ghost" onclick="exportExcel()">⬇ Excel</button>
+      <button class="btn-share" onclick="shareWithBuddy()">✈️ Send to Travel Buddy</button>
+      <button class="btn-new" onclick="window.location.href='/'">↩ New Plan</button>
+    </div>
+    <div class="result-wrap" id="result-wrap">
+      <!-- Plan rendered here -->
+    </div>
+  </div>
+</main>
+
+<footer>
+  <div class="footer-copy">© 2025 GAGglobetrotter · Powered by AI</div>
+</footer>
+
+<script>
+const SECTION_ICONS={morning:'🌅',morgen:'🌅',lunch:'🍽️',mittag:'🍽️',afternoon:'🌆',nachmittag:'🌆',evening:'🌙',abend:'🌙',tip:'💡',tipp:'💡'};
+let rawPlanText='';
+let lang='en';
+
+// Retrieve plan from sessionStorage (set before Stripe redirect)
+window.addEventListener('DOMContentLoaded',()=>{
+  rawPlanText=sessionStorage.getItem('gag_plan')||'';
+  lang=sessionStorage.getItem('gag_lang')||'en';
+  // Clear after reading so it doesn't linger
+  sessionStorage.removeItem('gag_plan');
+  sessionStorage.removeItem('gag_lang');
+
+  const wrap=document.getElementById('result-wrap');
+  if(!rawPlanText){
+    wrap.innerHTML=`
+      <div class="no-plan">
+        <div class="no-plan-icon">🔍</div>
+        <div class="no-plan-title">No plan found</div>
+        <div class="no-plan-sub">Your session may have expired. Please generate a new plan.</div>
+        <button class="btn-primary" onclick="window.location.href='/'">← Back to Planner</button>
+      </div>`;
+    return;
+  }
+  renderPlan(rawPlanText);
+});
+
+function renderPlan(text){
+  const container=document.getElementById('result-wrap');
+  container.innerHTML='';
+  const lines=text.split('\n').map(l=>l.trim()).filter(l=>l.length>0);
+  let introLines=[],dayBlocks=[],currentDay=null;
+  const isDayLine=l=>/^(DAY|TAG)\s+\d+/i.test(l);
+  const isSectionLine=l=>/^(Morning|Morgen|Lunch|Mittag|Afternoon|Nachmittag|Evening|Abend|Tip|Tipp):/i.test(l);
+  for(const line of lines){
+    if(isDayLine(line)){if(currentDay)dayBlocks.push(currentDay);currentDay={title:line,sections:[]};}
+    else if(currentDay){
+      if(isSectionLine(line)){const colon=line.indexOf(':');currentDay.sections.push({label:line.slice(0,colon),text:line.slice(colon+1).trim()});}
+      else if(currentDay.sections.length>0){currentDay.sections[currentDay.sections.length-1].text+=' '+line;}
+      else{currentDay.sections.push({label:'',text:line});}
+    }else{introLines.push(line);}
+  }
+  if(currentDay)dayBlocks.push(currentDay);
+  if(introLines.length>0){
+    const intro=document.createElement('div');intro.className='plan-intro';
+    intro.textContent=introLines.join(' ');container.appendChild(intro);
+  }
+  dayBlocks.forEach((day,dayIdx)=>{
+    const dayEl=document.createElement('div');dayEl.className='plan-day';
+    const header=document.createElement('div');header.className='plan-day-header';
+    const num=document.createElement('span');num.className='plan-day-num';num.textContent='Day '+(dayIdx+1);
+    header.appendChild(num);
+    header.appendChild(document.createTextNode(' '+day.title.replace(/^(DAY|TAG)\s+\d+:\s*/i,'')));
+    dayEl.appendChild(header);
+    const body=document.createElement('div');body.className='plan-day-body';
+    day.sections.forEach(sec=>{
+      const isTip=/^(Tip|Tipp)$/i.test(sec.label);
+      const secEl=document.createElement('div');secEl.className='plan-section';
+      if(sec.label){
+        const head=document.createElement('div');head.className='plan-section-head';
+        const icon=document.createElement('span');icon.className='plan-section-icon';
+        icon.textContent=SECTION_ICONS[sec.label.toLowerCase()]||'📌';
+        const title=document.createElement('span');title.className='plan-section-title';title.textContent=sec.label;
+        head.appendChild(icon);head.appendChild(title);secEl.appendChild(head);
+      }
+      if(isTip){
+        const tipEl=document.createElement('div');tipEl.className='plan-tip';tipEl.textContent=sec.text.replace(/\[.*?\]\(.*?\)/g,'').trim();
+        secEl.appendChild(tipEl);
+      }else{
+        const textEl=document.createElement('div');textEl.className='plan-section-text';
+        let html=sec.text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+        html=html.replace(/🗺️\s*\[Maps\]\((https?:\/\/[^)]+)\)/g,'<a href="$1" target="_blank" rel="noopener" class="plan-maps-link">🗺️ Maps</a>');
+        html=html.replace(/\[🗺️?\s*([^\]]*)\]\((https?:\/\/[^)]+)\)/g,'<a href="$2" target="_blank" rel="noopener" class="plan-maps-link">🗺️ $1</a>');
+        textEl.innerHTML=html;secEl.appendChild(textEl);
+      }
+      body.appendChild(secEl);
+    });
+    dayEl.appendChild(body);container.appendChild(dayEl);
+  });
+}
+
+function exportPDF(){
+  const{jsPDF}=window.jspdf;
+  const doc=new jsPDF({unit:'mm',format:'a4'});
+  const pageW=doc.internal.pageSize.getWidth();
+  const pageH=doc.internal.pageSize.getHeight();
+  const mL=18,mR=18,maxW=pageW-mL-mR;
+  let y=0;
+  function newPage(){doc.addPage();y=16;}
+  function chk(n){if(y+n>pageH-14)newPage();}
+  function cleanPDF(t){
+    return t.replace(/\uD83D\uDDFA\uFE0F\s*\[Maps\]\(https?:\/\/[^)]+\)/g,'')
+      .replace(/\[([^\]]+)\]\(https?:\/\/[^)]+\)/g,'$1')
+      .replace(/[\uD800-\uDFFF]/g,'')
+      .replace(/[^\u0000-\u007E]/g,ch=>{
+        const m={'é':'e','è':'e','ê':'e','à':'a','â':'a','ç':'c','ñ':'n','ü':'ue','ö':'oe','ä':'ae','ß':'ss'};
+        return m[ch]||'';
+      });
+  }
+  doc.setFillColor(37,99,235);doc.rect(0,0,pageW,22,'F');
+  doc.setTextColor(255,255,255);doc.setFont('helvetica','bold');doc.setFontSize(15);
+  doc.text('GAGglobetrotter',mL,13);
+  doc.setFont('helvetica','normal');doc.setFontSize(9);
+  doc.text('AI Travel Plan',mL,20);
+  doc.setTextColor(180,210,255);doc.setFontSize(8);
+  doc.text(new Date().toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}),pageW-mR,20,{align:'right'});
+  doc.setTextColor(0,0,0);y=32;
+  const lines=cleanPDF(rawPlanText).split('\n').map(l=>l.trim()).filter(l=>l);
+  const isDayLine=l=>/^(DAY|TAG)\s+\d+/i.test(l);
+  const isSectionLine=l=>/^(Morning|Morgen|Lunch|Mittag|Afternoon|Nachmittag|Evening|Abend|Tip|Tipp):/i.test(l);
+  for(const line of lines){
+    chk(16);
+    if(isDayLine(line)){
+      y+=3;
+      doc.setFillColor(37,99,235);doc.roundedRect(mL,y-5,maxW,11,2,2,'F');
+      doc.setTextColor(255,255,255);doc.setFont('helvetica','bold');doc.setFontSize(10.5);
+      const ci=line.indexOf(':');doc.text(ci>-1?line.slice(ci+1).trim():line,mL+4,y+3);
+      doc.setTextColor(0,0,0);y+=15;
+    }else if(isSectionLine(line)){
+      chk(12);
+      const ci=line.indexOf(':');
+      const lbl=line.slice(0,ci).trim();
+      const body=line.slice(ci+1).trim();
+      doc.setFillColor(239,246,255);doc.roundedRect(mL,y-4,24,7,1.5,1.5,'F');
+      doc.setFont('helvetica','bold');doc.setFontSize(7);doc.setTextColor(37,99,235);
+      doc.text(lbl.toUpperCase(),mL+2,y+0.8);
+      doc.setFont('helvetica','normal');doc.setFontSize(9.5);doc.setTextColor(30,41,59);
+      const wr=doc.splitTextToSize(body,maxW-28);
+      if(y+wr.length*5.2>pageH-14)newPage();
+      doc.text(wr,mL+27,y);y+=Math.max(wr.length*5.2+3,9);
+    }else{
+      chk(8);
+      doc.setFont('helvetica','normal');doc.setFontSize(9.5);doc.setTextColor(70,85,105);
+      const wr=doc.splitTextToSize(line,maxW);
+      doc.text(wr,mL,y);y+=wr.length*5.2+2;doc.setTextColor(0,0,0);
+    }
+  }
+  const total=doc.internal.getNumberOfPages();
+  for(let p=1;p<=total;p++){
+    doc.setPage(p);
+    doc.setFillColor(248,250,252);doc.rect(0,pageH-10,pageW,10,'F');
+    doc.setFontSize(7.5);doc.setTextColor(148,163,184);
+    doc.text('gagglobetrotter.com',mL,pageH-4);
+    doc.text('Page '+p+' / '+total,pageW-mR,pageH-4,{align:'right'});
+  }
+  doc.save('TravelPlan-GAGglobetrotter.pdf');
+}
+
+function exportExcel(){
+  const wb=XLSX.utils.book_new();
+  function cleanXL(t){
+    return t.replace(/\uD83D\uDDFA\uFE0F\s*\[Maps\]\(https?:\/\/[^)]+\)/g,'')
+      .replace(/\[([^\]]+)\]\(https?:\/\/[^)]+\)/g,'$1')
+      .replace(/[\uD800-\uDFFF]/g,'');
+  }
+  const rows=[['GAGglobetrotter - AI Travel Plan',''],['Generated: '+new Date().toLocaleDateString('en-GB'),''],['','']];
+  const lines=cleanXL(rawPlanText).split('\n').map(l=>l.trim()).filter(l=>l);
+  const isDayLine=l=>/^(DAY|TAG)\s+\d+/i.test(l);
+  const isSectionLine=l=>/^(Morning|Morgen|Lunch|Mittag|Afternoon|Nachmittag|Evening|Abend|Tip|Tipp):/i.test(l);
+  for(const line of lines){
+    if(isDayLine(line)){rows.push(['','']);rows.push([line,'']);}
+    else if(isSectionLine(line)){const ci=line.indexOf(':');rows.push([line.slice(0,ci).trim(),line.slice(ci+1).trim()]);}
+    else if(line){rows.push(['',line]);}
+  }
+  const ws=XLSX.utils.aoa_to_sheet(rows);
+  ws['!cols']=[{wch:18},{wch:90}];
+  XLSX.utils.book_append_sheet(wb,ws,'Travel Plan');
+  XLSX.writeFile(wb,'TravelPlan-GAGglobetrotter.xlsx');
+}
+
+function shareWithBuddy(){
+  exportPDF();
+  const msgs=[
+    "Okay so I may have spent the last 47 minutes planning our entire trip down to the exact restaurant where we'll cry happy tears. You're welcome. 🌍",
+    "I did ALL the hard work (okay I used AI, but still... I clicked SO many buttons). The PDF is attached. Don't say I never do anything for you. ✈️",
+  ];
+  const msg=msgs[Math.floor(Math.random()*msgs.length)];
+  const subject=encodeURIComponent('✈️ I planned our trip – you NEED to see this');
+  const body=encodeURIComponent(`Hey! 👋\n\n${msg}\n\nI've just created our travel plan using GAGglobetrotter's AI planner.\n\nSo... when are we going?! 🗓️\n\n—Sent via GAGglobetrotter`);
+  window.location.href=`mailto:?subject=${subject}&body=${body}`;
+}
+</script>
+</body>
+</html>
